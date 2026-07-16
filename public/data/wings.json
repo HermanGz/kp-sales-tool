@@ -23,7 +23,8 @@
             "Gorseval the Multifarious"
           ],
           "time": 175,
-          "li": 1
+          "li": 1,
+          "directFromPrev": false
         },
         {
           "id": "sabetha",

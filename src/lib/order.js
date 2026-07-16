@@ -69,9 +69,17 @@ export function buildSaleList({ wings, dailyIds, discarded, liTarget }) {
     const wing = wings.find((w) => w.id === wid)
     const idx = (b) => wing.bosses.findIndex((x) => x.id === b.id)
     const items = byWing.get(wid).sort((a, z) => idx(a) - idx(z))
+    if (wing.type !== 'raid') {
+      // strike collections have no in-wing progression: everything chains
+      runs.push(items)
+      continue
+    }
     let cur = [items[0]]
     for (let i = 1; i < items.length; i++) {
-      if (idx(items[i]) - idx(items[i - 1]) === 1) cur.push(items[i])
+      const adjacent = idx(items[i]) - idx(items[i - 1]) === 1
+      // directFromPrev:false = a skippable pre-event we don't do blocks chaining
+      const chainable = adjacent && items[i].directFromPrev !== false
+      if (chainable) cur.push(items[i])
       else {
         runs.push(cur)
         cur = [items[i]]
