@@ -23,8 +23,7 @@
             "Gorseval the Multifarious"
           ],
           "time": 175,
-          "li": 1,
-          "directFromPrev": false
+          "li": 1
         },
         {
           "id": "sabetha",
@@ -33,7 +32,8 @@
             "Sabetha the Saboteur"
           ],
           "time": 258,
-          "li": 1
+          "li": 1,
+          "preEvent": true
         }
       ]
     },
@@ -69,7 +69,8 @@
             "Matthias Gabrel"
           ],
           "time": 132,
-          "li": 1
+          "li": 1,
+          "preEvent": true
         }
       ]
     },
@@ -241,7 +242,8 @@
             "Kenut"
           ],
           "time": 438,
-          "li": 1
+          "li": 1,
+          "preEvent": true
         },
         {
           "id": "qadim",
@@ -303,7 +305,8 @@
             "Greer, the Blightbringer"
           ],
           "time": null,
-          "li": 1
+          "li": 1,
+          "preEvent": true
         },
         {
           "id": "decima",
@@ -312,7 +315,8 @@
             "Decima, the Stormsinger"
           ],
           "time": null,
-          "li": 1
+          "li": 1,
+          "preEvent": true
         },
         {
           "id": "ura",

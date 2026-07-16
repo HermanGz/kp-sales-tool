@@ -85,6 +85,11 @@ function BossDetail({ boss, presentPlayers, done, onToggleDone, onDiscard, overr
             <span>{boss.wing.short} · {boss.wing.name}</span>
             <span className="text-cream font-bold tabular-nums">{fmtTime(boss.time)}</span>
             <span className="text-teal-light font-bold">+{boss.effLi} LI</span>
+            {boss.preEvent && (
+              <span className="chip bg-danger/15 border border-danger/40 text-danger/90" title="Mandatory pre-event — time already included">
+                pre-event
+              </span>
+            )}
             {k.profile && (
               <span className="chip bg-teal-deep/40 text-teal-light uppercase">{k.profile.dmg} · {k.profile.style}</span>
             )}
@@ -399,6 +404,7 @@ export default function SaleDay() {
                   <div className="flex-1 min-w-0">
                     <span className="strike-name font-bold text-cream text-sm truncate block">
                       {b.name} {b.isDaily && <span className="text-cream/90">★</span>}
+                      {b.preEvent && <span className="text-danger/70 text-xs font-normal ml-1" title="Mandatory pre-event included">+pre</span>}
                       {isNext && !done && <span className="text-teal-light text-xs font-normal ml-1">next</span>}
                     </span>
                   </div>
