@@ -398,7 +398,7 @@
             "AH",
             "Mai Trin"
           ],
-          "time": null,
+          "time": 270,
           "li": 0
         },
         {
@@ -408,7 +408,7 @@
             "XJJ",
             "Ankka"
           ],
-          "time": null,
+          "time": 240,
           "li": 0
         },
         {
@@ -418,7 +418,7 @@
             "KO",
             "Minister Li"
           ],
-          "time": null,
+          "time": 540,
           "li": 0
         },
         {
@@ -428,7 +428,7 @@
             "HT",
             "Dragonvoid"
           ],
-          "time": null,
+          "time": 420,
           "li": 0
         },
         {
@@ -437,7 +437,7 @@
           "aliases": [
             "OLC"
           ],
-          "time": null,
+          "time": 480,
           "li": 0
         }
       ]
@@ -455,7 +455,7 @@
             "CO",
             "Dagda"
           ],
-          "time": null,
+          "time": 360,
           "li": 0
         },
         {
@@ -465,7 +465,7 @@
             "ToF",
             "Cerus"
           ],
-          "time": null,
+          "time": 390,
           "li": 0
         }
       ]
