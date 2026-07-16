@@ -318,7 +318,7 @@ export default function SaleDay() {
           </div>
           {liTarget > 0 && (
             <div className="text-[11px] text-silver/50 mt-1">
-              target {liTarget} · dailies always included
+              target {liTarget} · fastest set wins
             </div>
           )}
         </div>

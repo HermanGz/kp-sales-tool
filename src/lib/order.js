@@ -1,12 +1,13 @@
-// Daily sale logic:
-// 1) Daily bounties always in (2 LI each) unless discarded.
-// 2) Fill with the most efficient raid bosses (1 LI) until the LI target.
-//    Efficiency = fast kill time, with a bonus for bosses in wings we're already
-//    visiting (less downtime: no wing swap, fewer class changes).
-// 3) Final order is grouped by wing, and inside each wing bosses follow the
-//    wing's natural encounter order (e.g. Soulless Horror -> River of Souls).
+// Daily sale logic v3:
+// Always match the LI target with the FASTEST possible set of bosses.
+// - Daily bounties are worth 2 LI (any encounter), other raid bosses 1 LI.
+// - Nothing is forced: if target is 1, the single fastest source of LI wins.
+// - Exact optimization (0/1 knapsack over kill times, minimize total time
+//   subject to totalLI >= target). Bosses without a known time are only
+//   picked when the target is otherwise unreachable.
+// - Final order is grouped by wing, natural encounter order inside each wing.
 
-const SAME_WING_BONUS = 45
+const UNKNOWN_TIME_COST = 10 * 60 * 60
 
 export function flattenBosses(wings) {
   const out = []
@@ -18,38 +19,37 @@ export function buildSaleList({ wings, dailyIds, discarded, liTarget }) {
   const all = flattenBosses(wings)
   const isDiscarded = (id) => discarded.includes(id)
 
-  const dailies = all
-    .filter((b) => dailyIds.includes(b.id) && !isDiscarded(b.id))
-    .map((b) => ({ ...b, isDaily: true, effLi: 2 }))
+  const candidates = []
+  for (const b of all) {
+    if (isDiscarded(b.id)) continue
+    const isDaily = dailyIds.includes(b.id)
+    const effLi = isDaily ? 2 : b.wing.type === 'raid' ? (b.li ?? 1) : 0
+    if (effLi <= 0) continue
+    candidates.push({ ...b, isDaily, effLi, cost: b.time ?? UNKNOWN_TIME_COST })
+  }
 
-  let acc = dailies.reduce((s, b) => s + b.effLi, 0)
-  const selected = [...dailies]
-  const inWings = new Set(dailies.map((b) => b.wing.id))
+  const T = Math.max(0, liTarget)
+  let selected = []
+  let reached = T === 0
 
-  const pool = all.filter(
-    (b) =>
-      b.wing.type === 'raid' &&
-      (b.li ?? 1) > 0 &&
-      b.time != null &&
-      !dailyIds.includes(b.id) &&
-      !isDiscarded(b.id)
-  )
-
-  while (acc < liTarget && pool.length) {
-    const remaining = pool.filter((b) => !selected.some((s) => s.id === b.id))
-    if (!remaining.length) break
-    let best = null
-    let bestScore = Infinity
-    for (const b of remaining) {
-      const score = b.time - (inWings.has(b.wing.id) ? SAME_WING_BONUS : 0)
-      if (score < bestScore) {
-        bestScore = score
-        best = b
+  if (T > 0) {
+    const dp = new Array(T + 1).fill(null)
+    dp[0] = { t: 0, items: [] }
+    for (const c of candidates) {
+      for (let j = T; j >= 1; j--) {
+        const prev = dp[Math.max(0, j - c.effLi)]
+        if (prev && (!dp[j] || prev.t + c.cost < dp[j].t)) {
+          dp[j] = { t: prev.t + c.cost, items: [...prev.items, c] }
+        }
       }
     }
-    selected.push({ ...best, isDaily: false, effLi: best.li ?? 1 })
-    inWings.add(best.wing.id)
-    acc += best.li ?? 1
+    if (dp[T]) {
+      selected = dp[T].items
+      reached = true
+    } else {
+      selected = candidates
+      reached = false
+    }
   }
 
   const byWing = new Map()
@@ -82,5 +82,5 @@ export function buildSaleList({ wings, dailyIds, discarded, liTarget }) {
   const totalTime = list.reduce((s, b) => s + (b.time ?? 0), 0)
   const hasUnknownTimes = list.some((b) => b.time == null)
   const wingCount = orderedWingIds.length
-  return { list, totalLi, totalTime, hasUnknownTimes, wingCount, reached: totalLi >= liTarget }
+  return { list, totalLi, totalTime, hasUnknownTimes, wingCount, reached }
 }
