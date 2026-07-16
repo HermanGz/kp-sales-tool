@@ -47,7 +47,7 @@ export default function App() {
   useEffect(() => {
     ;(async () => {
       const [w, p, e] = await Promise.all([loadData('wings'), loadData('players'), loadData('events')])
-      setStore({ wings: w.data, players: p.data, events: e.data })
+      setStore({ wings: w.data ?? { wings: [] }, players: p.data ?? { players: [] }, events: e.data ?? { events: [] } })
       setDirty({ wings: w.dirty, players: p.dirty, events: e.dirty })
     })()
   }, [])

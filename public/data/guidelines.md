@@ -33,4 +33,9 @@ Everything editable lives **inside the app** (Bible, Roster, Events): boss times
 
 ## Team rules
 
-- Golden rule: dailies are always done (2 
+- Golden rule: dailies are always done (2 LI). Discarding is the exception.
+- LI runs = raids only. Fractals and achievements are sold per event.
+
+## Access
+
+The app link is public. Editing and saving to GitHub requires being a repo collaborator — ask Herman for access.
