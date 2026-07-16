@@ -90,7 +90,7 @@ export default function App() {
 
   return (
     <DataCtx.Provider value={ctx}>
-      <div className="max-w-5xl mx-auto px-4 pb-24">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 pb-24">
         <header className="pt-6 pb-4 flex flex-wrap items-center justify-between gap-4 anim-in">
           <Logo />
           <nav className="flex gap-1 bg-panel/70 border border-teal-deep/30 rounded-2xl p-1.5 backdrop-blur-sm overflow-x-auto">

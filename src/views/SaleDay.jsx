@@ -37,33 +37,39 @@ function CompPanel({ boss, presentPlayers, icons, comps, overrides, setOverride 
   })
 
   return (
-    <div className="mt-2 space-y-1.5 border-t border-teal-deep/30 pt-3">
+    <div className="mt-3 grid gap-2 sm:grid-cols-2 border-t border-teal-deep/30 pt-4">
       {assigned.map((a, i) => (
-        <div key={i} className="flex flex-wrap items-center gap-2.5 bg-ink/50 rounded-xl px-3 py-2 text-sm">
-          <span className={`chip ${a.slot.role === 'Heal' ? 'bg-teal/25 text-teal-light' : a.slot.role === 'Support' ? 'bg-cream/15 text-cream' : 'bg-silver/10 text-silver'}`}>
-            {a.slot.role}
-          </span>
-          <select
-            className="input !py-0.5 !px-2 w-32 text-sm"
-            value={a.player?.id || ''}
-            onChange={(e) => setOverride(i, e.target.value)}
-          >
-            {presentPlayers.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-          <span className="font-semibold text-cream">
-            <BuildChip name={a.build} icons={icons} />
-          </span>
-          {a.slot.notes && (
-            <span className="text-silver/70 ml-auto text-xs sm:text-sm">
-              <NotesText text={a.slot.notes} icons={icons} />
+        <div key={i} className="bg-ink/60 border border-teal-deep/30 rounded-xl px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className={`chip !text-sm !px-3 !py-1 ${a.slot.role === 'Heal' ? 'bg-teal/25 text-teal-light' : a.slot.role === 'Support' ? 'bg-cream/15 text-cream' : 'bg-silver/10 text-silver'}`}>
+              {a.slot.role}
             </span>
+            <select
+              className="input !py-1 w-36 text-base font-semibold"
+              value={a.player?.id || ''}
+              onChange={(e) => setOverride(i, e.target.value)}
+            >
+              {presentPlayers.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <span className="font-bold text-cream text-base [&_img]:w-7 [&_img]:h-7">
+              <BuildChip name={a.build} icons={icons} />
+            </span>
+          </div>
+          {a.slot.notes && (
+            <div className="mt-2.5 text-sm text-cream/90 bg-teal-deep/20 border border-teal-deep/40 rounded-lg px-3 py-2">
+              <span className="text-teal-light font-black uppercase text-[11px] tracking-wider mr-2">Duty</span>
+              <NotesText text={a.slot.notes} icons={icons} />
+            </div>
           )}
         </div>
       ))}
       {!comp?.slots?.length && (
-        <p className="text-xs text-silver/50">No comp defined in the Bible for this boss — showing default assignment by damage profile.</p>
+        <p className="text-sm text-silver/50 sm:col-span-2">
+          No comp defined in the Bible for this boss yet — showing a default (healer + DPS by damage
+          profile). Define the real one in Bible → this boss → Edit.
+        </p>
       )}
     </div>
   )
@@ -271,7 +277,7 @@ export default function SaleDay() {
                   <span className="text-silver/40 font-bold w-6 text-right shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="strike-name font-bold text-cream truncate">{b.name}</span>
+                      <span className="strike-name font-bold text-cream text-lg truncate">{b.name}</span>
                       {b.isDaily && <span className="chip bg-cream/90 text-ink border border-cream">★ DAILY</span>}
                       {isNext && !done && (
                         <span className="chip bg-teal-light/20 text-teal-light border border-teal-light/40">next up</span>
