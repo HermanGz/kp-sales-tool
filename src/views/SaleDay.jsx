@@ -55,76 +55,128 @@ const ROLE_CHIP = {
 
 function SquadPanel({ players, roster, setRoster }) {
   const { icons } = useData()
-  const entryOf = (id) => roster.find((r) => r.id === id)
-  const setPlayerRole = (id, role) =>
-    setRoster(entryOf(id) ? roster.map((r) => (r.id === id ? { ...r, role } : r)) : [...roster, { id, role }])
-  const setOut = (id) => setRoster(roster.filter((r) => r.id !== id))
+  const [openSlot, setOpenSlot] = useState(null)
+  const used = roster.filter(Boolean).map((r) => r.id)
+  const available = players.filter((p) => !used.includes(p.id))
+  const count = roster.filter(Boolean).length
+  const mainToRole = (p) => (normRole(p?.mainRole) === 'heal' ? 'Heal' : normRole(p?.mainRole) === 'support' ? 'Support' : 'DPS')
+
+  const setSlot = (i, val) => setRoster(roster.map((x, j) => (j === i ? val : x)))
+
+  const renderSlot = (i) => {
+    const entry = roster[i]
+    if (!entry) {
+      const isOpen = openSlot === i
+      return (
+        <div
+          key={i}
+          className={`rounded-2xl border-2 border-dashed min-h-36 p-3 transition-all ${
+            isOpen
+              ? 'border-teal-light/70 bg-ink/40'
+              : 'border-teal-deep/40 hover:border-teal/70 cursor-pointer flex items-center justify-center'
+          }`}
+          onClick={() => !isOpen && setOpenSlot(i)}
+        >
+          {isOpen ? (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-teal-light/80">Pick player</span>
+                <button
+                  className="text-silver/50 hover:text-cream px-1 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setOpenSlot(null)
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
+                {available.map((p) => (
+                  <button
+                    key={p.id}
+                    className="chip border border-teal-deep/50 text-silver hover:text-cream hover:border-teal-light cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSlot(i, { id: p.id, role: mainToRole(p) })
+                      setOpenSlot(null)
+                    }}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+                {!available.length && <p className="text-xs text-silver/50">Everyone is already placed.</p>}
+              </div>
+            </div>
+          ) : (
+            <span className="text-3xl text-teal-deep/80 font-black select-none">+</span>
+          )}
+        </div>
+      )
+    }
+    const p = players.find((x) => x.id === entry.id)
+    if (!p)
+      return (
+        <div key={i} className="rounded-2xl border-2 border-dashed border-danger/40 min-h-36 flex items-center justify-center">
+          <button className="text-xs text-danger/70 cursor-pointer" onClick={() => setSlot(i, null)}>unknown — clear</button>
+        </div>
+      )
+    return (
+      <div key={i} className="card p-3 border-teal-light/50 min-h-36 flex flex-col">
+        <div className="flex items-start justify-between gap-1">
+          <div className="font-bold text-cream truncate">
+            {p.name} {p.core && <span className="text-cream/70">★</span>}
+          </div>
+          <button
+            className="text-danger/60 hover:text-danger font-black px-1 cursor-pointer"
+            title="Empty this slot"
+            onClick={() => setSlot(i, null)}
+          >
+            ✕
+          </button>
+        </div>
+        <div className="mt-1.5 space-y-0.5 flex-1">
+          {(p.classes || []).slice(0, 2).map((c, j) => (
+            <div key={j} className="flex items-center gap-1.5 text-xs text-silver/70 [&_img]:w-4 [&_img]:h-4">
+              <BuildChip name={c.name} icons={icons} />
+              <span className="text-[10px] text-silver/40 font-bold">{c.level}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 grid grid-cols-3 gap-1">
+          {DAY_ROLES.map((role) => (
+            <button
+              key={role}
+              className={`text-[11px] font-bold rounded-md py-1.5 border transition-all cursor-pointer ${
+                entry.role === role
+                  ? (ROLE_CHIP[role] || '') + ' ring-1 ring-teal-light'
+                  : 'border-teal-deep/40 text-silver/60 hover:text-cream hover:border-teal'
+              }`}
+              onClick={() => setSlot(i, { ...entry, role })}
+            >
+              {role}
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="anim-in anim-in-1">
       <h2 className="text-[11px] uppercase tracking-widest text-teal-light/80 font-bold mb-2.5">
         Who's in today?{' '}
-        <span className="text-silver/50 normal-case">({roster.length} in — one click sets the role they play this sale)</span>
+        <span className="text-silver/50 normal-case">({count}/10 — each row is a subgroup)</span>
       </h2>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {players.map((p) => {
-          const entry = entryOf(p.id)
-          return (
-            <div
-              key={p.id}
-              className={`card p-4 transition-all duration-200 ${entry ? 'border-teal-light/60' : 'opacity-60 hover:opacity-100'}`}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="font-bold text-cream text-lg">
-                  {p.name} {p.core && <span className="text-cream/70" title="Core member">★</span>}
-                </div>
-                {entry ? (
-                  <span className={`chip border ${ROLE_CHIP[entry.role] || ROLE_CHIP.DPS}`}>{entry.role}</span>
-                ) : (
-                  <span className="chip bg-silver/5 text-silver/40 border border-silver/20">out</span>
-                )}
-              </div>
-
-              <div className="mt-2.5 space-y-1 min-h-12">
-                {(p.classes || []).slice(0, 3).map((c, j) => (
-                  <div key={j} className="flex items-center gap-2 text-sm text-silver/80">
-                    <BuildChip name={c.name} icons={icons} />
-                    <span className="text-[10px] text-silver/40 font-bold">{c.level}</span>
-                    <span className="text-[10px] text-silver/40">{c.role}</span>
-                  </div>
-                ))}
-                {(p.classes || []).length === 0 && <p className="text-xs text-silver/40">No classes listed</p>}
-              </div>
-
-              <div className="mt-3 grid grid-cols-4 gap-1.5">
-                {DAY_ROLES.map((role) => (
-                  <button
-                    key={role}
-                    className={`text-xs font-bold rounded-lg py-2 border transition-all cursor-pointer ${
-                      entry?.role === role
-                        ? (ROLE_CHIP[role] || '') + ' ring-1 ring-teal-light'
-                        : 'border-teal-deep/40 text-silver/60 hover:text-cream hover:border-teal'
-                    }`}
-                    onClick={() => setPlayerRole(p.id, role)}
-                  >
-                    {role}
-                  </button>
-                ))}
-                <button
-                  className={`text-xs font-bold rounded-lg py-2 border transition-all cursor-pointer ${
-                    !entry
-                      ? 'border-silver/40 text-silver bg-silver/10'
-                      : 'border-teal-deep/40 text-silver/60 hover:text-danger hover:border-danger/60'
-                  }`}
-                  onClick={() => setOut(p.id)}
-                >
-                  Out
-                </button>
-              </div>
+      <div className="space-y-3">
+        {[0, 1].map((g) => (
+          <div key={g}>
+            <div className="text-[10px] uppercase tracking-widest text-silver/40 font-bold mb-1.5">Subgroup {g + 1}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+              {[0, 1, 2, 3, 4].map((k) => renderSlot(g * 5 + k))}
             </div>
-          )
-        })}
-        {players.length === 0 && <p className="text-sm text-silver/60">No players in the roster yet.</p>}
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -277,19 +329,25 @@ export default function SaleDay() {
   const run0 = loadRun()
 
   const mainToRole = (p) => (normRole(p?.mainRole) === 'heal' ? 'Heal' : normRole(p?.mainRole) === 'support' ? 'Support' : 'DPS')
-  const coreDefaults = (players?.players || [])
-    .filter((p) => p.core)
-    .map((p) => ({ id: p.id, role: mainToRole(p) }))
-  const normalizeRoster = (r) =>
-    (r || []).map((x) =>
-      typeof x === 'string'
-        ? { id: x, role: mainToRole((players?.players || []).find((p) => p.id === x)) }
-        : x
+  const SLOTS = 10
+  const slotify = (r) => {
+    const arr = (r || []).map((x) =>
+      typeof x === 'string' ? { id: x, role: mainToRole((players?.players || []).find((p) => p.id === x)) } : x
     )
+    if (arr.length === SLOTS) return arr.map((x) => x || null)
+    const out = new Array(SLOTS).fill(null)
+    arr.filter(Boolean).forEach((x, i) => {
+      if (i < SLOTS) out[i] = x
+    })
+    return out
+  }
+  const coreDefaults = slotify(
+    (players?.players || []).filter((p) => p.core).map((p) => ({ id: p.id, role: mainToRole(p) }))
+  )
   const [liTargetStr, setLiTargetStr] = useState(run0.liTargetStr ?? '10')
   const [discarded, setDiscarded] = useState(run0.discarded ?? [])
   const [completed, setCompleted] = useState(run0.completed ?? [])
-  const [roster, setRoster] = useState(() => (run0.roster ? normalizeRoster(run0.roster) : coreDefaults))
+  const [roster, setRoster] = useState(() => (run0.roster ? slotify(run0.roster) : coreDefaults))
   const [assignOv, setAssignOv] = useState(run0.assignOv ?? {})
   const [selected, setSelected] = useState(null)
   const [dailies, setDailies] = useState(null)
@@ -321,9 +379,10 @@ export default function SaleDay() {
   )
 
   const presentPlayers = roster
-    .map((r) => {
+    .map((r, i) => {
+      if (!r) return null
       const p = (players?.players || []).find((x) => x.id === r.id)
-      return p ? { ...p, dayRole: r.role } : null
+      return p ? { ...p, dayRole: r.role, subgroup: i < 5 ? 1 : 2 } : null
     })
     .filter(Boolean)
   const liDone = sale.list.filter((b) => completed.includes(b.id)).reduce((s, b) => s + b.effLi, 0)
