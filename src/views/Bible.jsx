@@ -79,9 +79,6 @@ function BossPage({ wing, boss, onBack }) {
         </div>
       </div>
 
-      <p className="text-xs text-silver/40">
-        Data is read-only in the app. Updates go through Claude or GitHub (public/data/*.json) and reach everyone in ~1 minute.
-      </p>
     </div>
   )
 }
