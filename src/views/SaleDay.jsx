@@ -54,82 +54,81 @@ const ROLE_CHIP = {
 }
 
 function SquadPanel({ players, roster, setRoster }) {
-  const [pickingPlayer, setPickingPlayer] = useState(false)
-  const [pendingId, setPendingId] = useState(null)
-  const available = players.filter((p) => !roster.some((r) => r.id === p.id))
+  const [open, setOpen] = useState(null)
 
-  const add = (id, role) => {
-    setRoster([...roster, { id, role }])
-    setPendingId(null)
-    setPickingPlayer(false)
+  const entryOf = (id) => roster.find((r) => r.id === id)
+  const setPlayerRole = (id, role) => {
+    setRoster(entryOf(id) ? roster.map((r) => (r.id === id ? { ...r, role } : r)) : [...roster, { id, role }])
+    setOpen(null)
   }
-  const remove = (id) => setRoster(roster.filter((r) => r.id !== id))
-  const setRole = (id, role) => setRoster(roster.map((r) => (r.id === id ? { ...r, role } : r)))
+  const remove = (id) => {
+    setRoster(roster.filter((r) => r.id !== id))
+    setOpen(null)
+  }
 
   return (
     <div className="card p-4 anim-in anim-in-1">
       <h2 className="text-[11px] uppercase tracking-widest text-teal-light/80 font-bold mb-2.5">
-        Who's in today? <span className="text-silver/50 normal-case">({roster.length} in — pick each player's role for this sale)</span>
+        Who's in today?{' '}
+        <span className="text-silver/50 normal-case">
+          ({roster.length} in — click a player, pick the role they play this sale)
+        </span>
       </h2>
       <div className="flex flex-wrap gap-2.5">
-        {roster.map((r) => {
-          const p = players.find((x) => x.id === r.id)
-          if (!p) return null
+        {players.map((p) => {
+          const entry = entryOf(p.id)
+          const isOpen = open === p.id
           return (
-            <div key={r.id} className="flex items-center gap-2 bg-ink/60 border border-teal-deep/40 rounded-xl pl-3 pr-2 py-2">
-              <span className="font-bold text-cream">{p.name}</span>
-              <select
-                className={`chip border cursor-pointer !py-1 appearance-none text-center ${ROLE_CHIP[r.role] || ROLE_CHIP.DPS}`}
-                value={r.role}
-                onChange={(e) => setRole(r.id, e.target.value)}
-                title="Role for this sale"
+            <div key={p.id} className="relative">
+              <div
+                className={`flex items-center gap-2 rounded-xl pl-3 pr-2 py-2 border transition-all duration-200 ${
+                  entry
+                    ? 'bg-ink/60 border-teal-deep/60'
+                    : 'bg-ink/30 border-transparent opacity-50 hover:opacity-100 hover:border-teal-deep/40'
+                }`}
               >
-                {DAY_ROLES.map((x) => (
-                  <option key={x} className="bg-ink text-silver">{x}</option>
-                ))}
-              </select>
-              <button className="text-danger/60 hover:text-danger font-black px-1 cursor-pointer" onClick={() => remove(r.id)} title="Remove">
-                ✕
-              </button>
+                <button className="font-bold text-cream cursor-pointer" onClick={() => setOpen(isOpen ? null : p.id)}>
+                  {p.name}
+                </button>
+                {entry ? (
+                  <>
+                    <button
+                      className={`chip border cursor-pointer ${ROLE_CHIP[entry.role] || ROLE_CHIP.DPS}`}
+                      onClick={() => setOpen(isOpen ? null : p.id)}
+                      title="Click to change role"
+                    >
+                      {entry.role}
+                    </button>
+                    <button
+                      className="text-danger/60 hover:text-danger font-black px-1 cursor-pointer"
+                      onClick={() => remove(p.id)}
+                      title="Remove from today"
+                    >
+                      ✕
+                    </button>
+                  </>
+                ) : (
+                  <span className="text-xs text-silver/40">out</span>
+                )}
+              </div>
+              {isOpen && (
+                <div className="absolute left-0 top-full mt-1.5 z-20 flex gap-1.5 bg-panel border border-teal/50 rounded-xl p-2 shadow-2xl shadow-ink/80 anim-in">
+                  {DAY_ROLES.map((role) => (
+                    <button
+                      key={role}
+                      className={`chip border cursor-pointer ${ROLE_CHIP[role]} ${entry?.role === role ? 'ring-2 ring-teal-light' : ''}`}
+                      onClick={() => setPlayerRole(p.id, role)}
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )
         })}
-
-        {pendingId ? (
-          <div className="flex items-center gap-2 bg-ink/60 border border-teal-light/60 rounded-xl px-3 py-2">
-            <span className="font-bold text-cream">{players.find((p) => p.id === pendingId)?.name}</span>
-            <span className="text-xs text-silver/60">plays as</span>
-            {DAY_ROLES.map((role) => (
-              <button key={role} className={`chip border cursor-pointer ${ROLE_CHIP[role]}`} onClick={() => add(pendingId, role)}>
-                {role}
-              </button>
-            ))}
-            <button className="text-silver/50 hover:text-cream px-1 cursor-pointer" onClick={() => setPendingId(null)}>✕</button>
-          </div>
-        ) : pickingPlayer ? (
-          <select
-            autoFocus
-            className="input !py-2"
-            defaultValue=""
-            onChange={(e) => e.target.value && setPendingId(e.target.value)}
-            onBlur={() => !pendingId && setPickingPlayer(false)}
-          >
-            <option value="" disabled>Select player…</option>
-            {available.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        ) : (
-          <button
-            className="border-2 border-dashed border-teal-deep/60 hover:border-teal-light text-silver/60 hover:text-cream rounded-xl px-4 py-2 font-semibold transition-all cursor-pointer"
-            onClick={() => setPickingPlayer(true)}
-            disabled={!available.length}
-          >
-            + Add player
-          </button>
-        )}
-        {roster.length === 0 && !pickingPlayer && (
-          <p className="text-sm text-silver/60 self-center">Empty squad — add who's coming and the role each one plays today.</p>
+        {players.length === 0 && (
+          <p className="text-sm text-silver/60">No players in the roster yet — ask Herman/Claude to add the squad.</p>
         )}
       </div>
     </div>
