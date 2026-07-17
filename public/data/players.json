@@ -3,7 +3,7 @@
   "players": [
     {
       "id": "vegzio",
-      "name": "Vegzio",
+      "name": "Vegzio | Matías",
       "mainRole": "Healer",
       "core": true,
       "classes": [
@@ -14,34 +14,34 @@
         }
       ],
       "mechanics": [],
-      "notes": "Matías"
+      "notes": ""
     },
     {
       "id": "lolwar",
-      "name": "Lolwar",
+      "name": "Lolwar | Jaider",
       "mainRole": "DPS",
       "core": true,
       "classes": [],
       "mechanics": [],
-      "notes": "Jaider"
+      "notes": ""
     },
     {
       "id": "strickzito",
-      "name": "Strickzito",
+      "name": "Strickzito | José",
       "mainRole": "DPS",
       "core": true,
       "classes": [],
       "mechanics": [],
-      "notes": "José"
+      "notes": ""
     },
     {
       "id": "exandreus",
-      "name": "Exandreus",
+      "name": "Exandreus | André",
       "mainRole": "DPS",
       "core": true,
       "classes": [],
       "mechanics": [],
-      "notes": "André"
+      "notes": ""
     }
   ]
 }
