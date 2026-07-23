@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useData } from '../App.jsx'
 import { BuildChip, NotesText, resolveBuildIcon } from '../lib/icons.jsx'
 
@@ -59,13 +59,16 @@ const selCls =
   'bg-ink/60 border border-teal-deep/40 rounded-lg px-2 py-1 text-sm text-cream focus:border-teal outline-none'
 
 // Uncontrolled text field that commits on blur/Enter — immune to re-render focus loss.
-function Field({ value, onCommit, className = '', textarea = false, placeholder = '' }) {
+function Field({ value, onCommit, className = '', textarea = false, placeholder = '', list }) {
+  const [v, setV] = useState(value ?? '')
+  useEffect(() => setV(value ?? ''), [value])
   const props = {
-    key: value ?? '',
-    defaultValue: value ?? '',
+    value: v,
     placeholder,
+    list,
     className: `${selCls} ${className}`,
-    onBlur: (e) => e.target.value !== (value ?? '') && onCommit(e.target.value),
+    onChange: (e) => setV(e.target.value),
+    onBlur: () => v !== (value ?? '') && onCommit(v),
     onKeyDown: textarea ? undefined : (e) => e.key === 'Enter' && e.target.blur(),
   }
   return textarea ? <textarea {...props} /> : <input {...props} />
@@ -82,30 +85,36 @@ function TimeField({ seconds, onCommit }) {
     onCommit((isNaN(mm) ? 0 : mm) * 60 + (isNaN(ss) ? 0 : ss))
   }
   const num = 'w-12 text-center appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+  const [mv, setMv] = useState(String(m))
+  const [sv, setSv] = useState(String(sec))
+  useEffect(() => {
+    setMv(String(m))
+    setSv(String(sec))
+  }, [m, sec])
   return (
     <span className="inline-flex items-center gap-0.5">
       <input
-        key={`m${m}`}
         type="number"
         min="0"
         inputMode="numeric"
         placeholder="min"
-        defaultValue={m}
+        value={mv}
         className={`${selCls} ${num}`}
-        onBlur={(e) => commit(e.target.value, String(sec))}
+        onChange={(e) => setMv(e.target.value)}
+        onBlur={() => commit(mv, sv)}
         onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
       />
       <span className="text-silver font-bold">:</span>
       <input
-        key={`s${sec}`}
         type="number"
         min="0"
         max="59"
         inputMode="numeric"
         placeholder="sec"
-        defaultValue={sec}
+        value={sv}
         className={`${selCls} ${num}`}
-        onBlur={(e) => commit(String(m), e.target.value)}
+        onChange={(e) => setSv(e.target.value)}
+        onBlur={() => commit(mv, sv)}
         onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
       />
     </span>
@@ -189,6 +198,7 @@ function WingCard({ w, edited, onOpen }) {
 function BuildCombo({ value, builds, icons, onCommit }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState(value || '')
+  useEffect(() => setQuery(value || ''), [value])
   const sorted = useMemo(() => [...builds].sort((a, b) => a.name.localeCompare(b.name)), [builds])
   const q = query.trim().toLowerCase()
   const list = q && q !== (value || '').toLowerCase() ? sorted.filter((b) => b.name.toLowerCase().includes(q)) : sorted
@@ -266,14 +276,12 @@ function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
     <div className="rounded-xl border border-teal-deep/20 bg-ink/30 p-2 space-y-1.5">
       <div className="flex items-center gap-1.5">
         <RoleChip role={slot.role} onClick={cycleRole} />
-        <input
-          key={slot.player || ''}
-          defaultValue={slot.player || ''}
+        <Field
+          value={slot.player}
           placeholder="player"
           list="kp-roster-names"
-          className={`${selCls} w-32 shrink-0`}
-          onBlur={(e) => e.target.value !== (slot.player || '') && onChange({ ...slot, player: e.target.value })}
-          onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+          className="w-32 shrink-0"
+          onCommit={(v) => onChange({ ...slot, player: v })}
         />
         <datalist id="kp-roster-names">
           {players.map((p) => (
@@ -283,7 +291,7 @@ function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
         {slot.build && resolveBuildIcon(slot.build, icons) && (
           <img src={resolveBuildIcon(slot.build, icons)} alt="" className="w-9 h-9 rounded-md shrink-0" />
         )}
-        <BuildCombo key={slot.build || ''} value={slot.build} builds={builds} icons={icons} onCommit={(v) => onChange({ ...slot, build: v })} />
+        <BuildCombo value={slot.build} builds={builds} icons={icons} onCommit={(v) => onChange({ ...slot, build: v })} />
       </div>
       <Field
         value={slot.note}
