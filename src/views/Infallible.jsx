@@ -304,6 +304,12 @@ function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
 }
 
 const DRAW_COLORS = ['#4fb3d4', '#e05252', '#f5b942', '#39c07a', '#f2ead9']
+const MAP_ICONS = [
+  { id: 'mesmer_portal', name: 'Mesmer Portal (Portal Entre)', url: 'https://render.guildwars2.com/file/BB7D7902B947C52DF3FC340AA66697F0CE669E31/103558.png' },
+  { id: 'shadow_portal', name: 'Thief Portal (Prepare Shadow Portal)', url: 'https://render.guildwars2.com/file/D62F215C68C77A2F069238A39FD8A6A135B438C1/2175068.png' },
+  { id: 'mass_invis', name: 'Mass Invisibility', url: 'https://render.guildwars2.com/file/E1EB3BC23A10BA9150EF992B03A813F4A26217A8/103755.png' },
+]
+
 const TOOLS = [
   { id: 'pin', icon: '📍', label: 'Marker' },
   { id: 'pen', icon: '✏️', label: 'Pen' },
@@ -311,6 +317,7 @@ const TOOLS = [
   { id: 'arrow', icon: '➔', label: 'Arrow' },
   { id: 'ellipse', icon: '◯', label: 'Circle' },
   { id: 'text', icon: '🄰', label: 'Text' },
+  { id: 'sicon', icon: '✦', label: 'Skill icon' },
   { id: 'move', icon: '✋', label: 'Move' },
   { id: 'erase', icon: '🧽', label: 'Erase' },
 ]
@@ -369,6 +376,7 @@ function StrategyImage({ seg, editing, onChange }) {
   const [armClear, setArmClear] = useState(false)
   const [editText, setEditText] = useState(null)
   const [drag, setDrag] = useState(null)
+  const [mapIcon, setMapIcon] = useState(MAP_ICONS[0])
   const pins = seg.pins || []
   const draw = seg.draw || []
   const src = seg.image
@@ -396,6 +404,10 @@ function StrategyImage({ seg, editing, onChange }) {
     if (tool === 'text') {
       onChange({ ...seg, draw: [...draw, { t: 'text', x, y, text: '', c: color }] })
       setEditText(draw.length)
+      return
+    }
+    if (tool === 'sicon') {
+      onChange({ ...seg, draw: [...draw, { t: 'icon', x, y, url: mapIcon.url, n: mapIcon.name }] })
       return
     }
     e.currentTarget.setPointerCapture?.(e.pointerId)
@@ -493,6 +505,22 @@ function StrategyImage({ seg, editing, onChange }) {
               {t.icon} <span className="text-xs">{t.label}</span>
             </button>
           ))}
+          {tool === 'sicon' && (
+            <>
+              <span className="w-px h-5 bg-teal-deep/40" />
+              {MAP_ICONS.map((ic) => (
+                <button
+                  key={ic.id}
+                  type="button"
+                  title={ic.name}
+                  onClick={() => setMapIcon(ic)}
+                  className={`p-0.5 rounded-lg border ${mapIcon.id === ic.id ? 'border-teal bg-teal/15' : 'border-transparent hover:border-teal-deep/50'}`}
+                >
+                  <img src={ic.url} alt={ic.name} className="w-7 h-7 rounded" />
+                </button>
+              ))}
+            </>
+          )}
           <span className="w-px h-5 bg-teal-deep/40" />
           {DRAW_COLORS.map((c) => (
             <button
@@ -579,8 +607,28 @@ function StrategyImage({ seg, editing, onChange }) {
             )}
           </svg>
           {draw.map((sh, i) => {
-            if (sh.t !== 'text') return null
+            if (sh.t !== 'text' && sh.t !== 'icon') return null
             const drawing = editing && ['pen', 'line', 'arrow', 'ellipse'].includes(tool)
+            if (sh.t === 'icon') {
+              const ipos = drag && drag.kind === 'icon' && drag.i === i ? drag : sh
+              return (
+                <img
+                  key={`ic${i}`}
+                  src={sh.url}
+                  alt={sh.n}
+                  title={sh.n}
+                  draggable={false}
+                  className={`absolute -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-md shadow-lg shadow-black/50 select-none ${drawing ? 'pointer-events-none' : ''} ${editing && tool === 'move' ? 'cursor-move ring-2 ring-teal-light' : ''} ${editing && tool === 'erase' ? 'cursor-pointer ring-2 ring-danger' : ''}`}
+                  style={{ left: `${ipos.x}%`, top: `${ipos.y}%` }}
+                  onPointerDown={(e) => {
+                    if (!editing) return
+                    e.stopPropagation()
+                    if (tool === 'erase') eraseShape(i)
+                    else if (tool === 'move') setDrag({ kind: 'icon', i, x: sh.x, y: sh.y })
+                  }}
+                />
+              )
+            }
             if (editing && editText === i) {
               return (
                 <input
