@@ -224,16 +224,22 @@ function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
         ))}
       </datalist>
       {slot.build && resolveBuildIcon(slot.build, icons) && (
-        <img src={resolveBuildIcon(slot.build, icons)} alt="" className="w-6 h-6 rounded-sm shrink-0" />
+        <img src={resolveBuildIcon(slot.build, icons)} alt="" className="w-9 h-9 rounded-md shrink-0" />
       )}
-      <select className={selCls} value={slot.build || ''} onChange={(e) => onChange({ ...slot, build: e.target.value })}>
-        <option value="">— class/build —</option>
-        {builds.map((b) => (
-          <option key={b.id} value={b.name}>
-            {b.name}
-          </option>
+      <input
+        key={slot.build || ''}
+        defaultValue={slot.build || ''}
+        placeholder="class/build"
+        list="kp-build-names"
+        className={`${selCls} w-40`}
+        onBlur={(e) => e.target.value !== (slot.build || '') && onChange({ ...slot, build: e.target.value })}
+        onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+      />
+      <datalist id="kp-build-names">
+        {[...builds].sort((a, b) => a.name.localeCompare(b.name)).map((b) => (
+          <option key={b.id} value={b.name} />
         ))}
-      </select>
+      </datalist>
       <Field value={slot.note} placeholder="note" className="flex-1 min-w-[80px]" onCommit={(v) => onChange({ ...slot, note: v })} />
     </div>
   )
