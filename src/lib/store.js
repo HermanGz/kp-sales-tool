@@ -10,6 +10,7 @@ export const DATA_FILES = {
   comps: 'data/comps.json',
   icons: 'data/icons.json',
   builds: 'data/builds.json',
+  infallible: 'data/infallible.json',
 }
 
 // one-time cleanup of the old editing system's local overrides

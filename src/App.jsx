@@ -5,6 +5,7 @@ import Bible from './views/Bible.jsx'
 import Roster from './views/Roster.jsx'
 import Events from './views/Events.jsx'
 import Guidelines from './views/Guidelines.jsx'
+import Infallible from './views/Infallible.jsx'
 
 export const DataCtx = createContext(null)
 export const useData = () => useContext(DataCtx)
@@ -14,6 +15,7 @@ const TABS = [
   { id: 'bible', label: 'Bible' },
   { id: 'roster', label: 'Roster' },
   { id: 'events', label: 'Events' },
+  { id: 'infallible', label: 'Infallible' },
   { id: 'guidelines', label: 'Guidelines' },
 ]
 
@@ -43,13 +45,14 @@ export default function App() {
   useEffect(() => {
     purgeLegacyLocal()
     ;(async () => {
-      const [wings, players, events, comps, icons, builds] = await Promise.all([
+      const [wings, players, events, comps, icons, builds, infallible] = await Promise.all([
         loadData('wings'),
         loadData('players'),
         loadData('events'),
         loadData('comps'),
         loadData('icons'),
         loadData('builds'),
+        loadData('infallible'),
       ])
       setStore({
         wings: wings ?? { wings: [] },
@@ -58,6 +61,7 @@ export default function App() {
         comps: comps ?? { bosses: {} },
         icons: icons ?? {},
         builds: builds ?? { builds: [] },
+        infallible: infallible ?? null,
       })
     })()
   }, [])
@@ -88,6 +92,7 @@ export default function App() {
             {tab === 'bible' && <Bible />}
             {tab === 'roster' && <Roster />}
             {tab === 'events' && <Events />}
+            {tab === 'infallible' && <Infallible />}
             {tab === 'guidelines' && <Guidelines />}
           </main>
         )}

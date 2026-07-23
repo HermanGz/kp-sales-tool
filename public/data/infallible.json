@@ -1,0 +1,143 @@
+{
+  "updated": "2026-07-23",
+  "overview": {
+    "title": "Infallible",
+    "description": "Meta-achievement: complete the full 'Down and Out' series — one sub-achievement per raid wing. Widely considered the hardest raid achievement in GW2.",
+    "rules": [
+      "Full wing clear within a strict time limit (timer trigger varies per wing)",
+      "NO downstate for anyone during the entire wing",
+      "Every encounter that has a Challenge Mode must be done ON Challenge Mode",
+      "W8: Ura must be done on LEGENDARY Challenge Mode",
+      "Quickplay kills don't count"
+    ],
+    "source": "Snow Crows — The New Raiding Achievements (updated Mar 2026)"
+  },
+  "wings": [
+    {
+      "id": "w1", "short": "W1", "name": "Spirit Vale",
+      "timeLimit": 720, "timerTrigger": "Timer starts when Vale Guardian becomes vulnerable",
+      "status": "planning",
+      "cms": [],
+      "comp": [
+        { "sub": 1, "role": "Heal", "build": "", "note": "" },
+        { "sub": 1, "role": "Support", "build": "", "note": "" },
+        { "sub": 1, "role": "DPS", "build": "", "note": "" },
+        { "sub": 1, "role": "DPS", "build": "", "note": "" },
+        { "sub": 1, "role": "DPS", "build": "", "note": "" },
+        { "sub": 2, "role": "Heal", "build": "", "note": "" },
+        { "sub": 2, "role": "Support", "build": "", "note": "" },
+        { "sub": 2, "role": "DPS", "build": "", "note": "" },
+        { "sub": 2, "role": "DPS", "build": "", "note": "" },
+        { "sub": 2, "role": "DPS", "build": "", "note": "" }
+      ],
+      "segments": [
+        { "id": "vg", "name": "Vale Guardian", "kind": "boss", "target": 115, "image": null, "strategy": "", "duties": [] },
+        { "id": "rift_transition", "name": "Transition to Rifts", "kind": "transition", "target": 20, "image": null, "strategy": "", "duties": [] },
+        { "id": "rifts", "name": "Spirit Woods — Rifts", "kind": "event", "target": 190, "image": null, "strategy": "", "duties": [] },
+        { "id": "sr", "name": "Spirit Run", "kind": "event", "target": 50, "image": null, "strategy": "", "duties": [] },
+        { "id": "buttons", "name": "Buttons", "kind": "event", "target": 15, "image": null, "strategy": "", "duties": [] },
+        { "id": "gors_transition", "name": "Transition to Gorseval", "kind": "transition", "target": 15, "image": null, "strategy": "", "duties": [] },
+        { "id": "gorseval", "name": "Gorseval", "kind": "boss", "target": 105, "image": null, "strategy": "", "duties": [] },
+        { "id": "pre_sabetha", "name": "Pre-Sabetha (bandits)", "kind": "event", "target": 65, "image": null, "strategy": "", "duties": [] },
+        { "id": "sabetha", "name": "Sabetha", "kind": "boss", "target": 175, "image": null, "strategy": "", "duties": [] }
+      ],
+      "notes": "Segment targets seeded from a reference run sheet — adjust to KP's own plan."
+    },
+    {
+      "id": "w2", "short": "W2", "name": "Salvation Pass",
+      "timeLimit": 690, "timerTrigger": "Timer starts when the first mushroom is eaten (Slothasor wakes)",
+      "status": "planning",
+      "cms": [],
+      "comp": [],
+      "segments": [
+        { "id": "slothasor", "name": "Slothasor", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "trio", "name": "Bandit Trio", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "matthias", "name": "Matthias", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+      ],
+      "notes": ""
+    },
+    {
+      "id": "w3", "short": "W3", "name": "Stronghold of the Faithful",
+      "timeLimit": 810, "timerTrigger": "Timer starts after Glenna's initial dialogue (Escort counts!)",
+      "status": "planning",
+      "cms": ["Keep Construct"],
+      "comp": [],
+      "segments": [
+        { "id": "escort", "name": "Escort", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "keep_construct", "name": "Keep Construct (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "twisted_castle", "name": "Twisted Castle", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "xera", "name": "Xera", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+      ],
+      "notes": ""
+    },
+    {
+      "id": "w4", "short": "W4", "name": "Bastion of the Penitent",
+      "timeLimit": 810, "timerTrigger": "Timer starts right after talking to Glenna (ticks while she walks!)",
+      "status": "planning",
+      "cms": ["Cairn", "Mursaat Overseer", "Samarog", "Deimos"],
+      "comp": [],
+      "segments": [
+        { "id": "cairn", "name": "Cairn (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "mursaat", "name": "Mursaat Overseer (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "samarog", "name": "Samarog (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "deimos", "name": "Deimos (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+      ],
+      "notes": ""
+    },
+    {
+      "id": "w5", "short": "W5", "name": "Hall of Chains",
+      "timeLimit": 930, "timerTrigger": "Timer starts on entering combat with Soulless Horror (Desmina)",
+      "status": "planning",
+      "cms": ["Soulless Horror", "Dhuum"],
+      "comp": [],
+      "segments": [
+        { "id": "soulless_horror", "name": "Soulless Horror (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "river", "name": "River of Souls", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "statues", "name": "Statues (Eyes / Eater / Broken King)", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "dhuum", "name": "Dhuum (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+      ],
+      "notes": ""
+    },
+    {
+      "id": "w6", "short": "W6", "name": "Mythwright Gambit",
+      "timeLimit": 930, "timerTrigger": "Timer starts on entering combat with Conjured Amalgamate",
+      "status": "planning",
+      "cms": ["Conjured Amalgamate", "Twin Largos", "Qadim"],
+      "comp": [],
+      "segments": [
+        { "id": "ca", "name": "Conjured Amalgamate (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "largos", "name": "Twin Largos (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "qadim", "name": "Qadim (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+      ],
+      "notes": ""
+    },
+    {
+      "id": "w7", "short": "W7", "name": "The Key of Ahdashim",
+      "timeLimit": 990, "timerTrigger": "Timer starts on triggering Glenna's dialogue — open the gate fast",
+      "status": "planning",
+      "cms": ["Sabir", "Adina", "Qadim the Peerless"],
+      "comp": [],
+      "segments": [
+        { "id": "gate", "name": "Gate + split to cardinals", "kind": "transition", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "sabir", "name": "Sabir (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "adina", "name": "Adina (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "qtp", "name": "Qadim the Peerless (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+      ],
+      "notes": ""
+    },
+    {
+      "id": "w8", "short": "W8", "name": "Mount Balrior",
+      "timeLimit": 1650, "timerTrigger": "Timer starts on clearing the first titanspawn camp",
+      "status": "planning",
+      "cms": ["Greer (CM)", "Decima (CM)", "Ura (LEGENDARY CM)"],
+      "comp": [],
+      "segments": [
+        { "id": "camp", "name": "Titanspawn camp (pre-event)", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "greer", "name": "Greer (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "decima", "name": "Decima (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
+        { "id": "ura", "name": "Ura (LEGENDARY CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+      ],
+      "notes": "Two CMs plus Ura Legendary CM inside the 27:30 — the long timer is deceiving."
+    }
+  ]
+}
