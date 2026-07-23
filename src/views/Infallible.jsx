@@ -285,6 +285,13 @@ function arrowHead(x1, y1, x2, y2, rect) {
   return [mk(0.45), [x2, y2], mk(-0.45)]
 }
 
+const IMG_SIZES = [
+  { id: 'sm', label: 'S', px: 380 },
+  { id: 'md', label: 'M', px: 600 },
+  { id: 'lg', label: 'L', px: 820 },
+  { id: 'full', label: 'Full', px: null },
+]
+
 function StrategyImage({ seg, editing, onChange }) {
   const [tool, setTool] = useState('pin')
   const [color, setColor] = useState(DRAW_COLORS[0])
@@ -423,9 +430,21 @@ function StrategyImage({ seg, editing, onChange }) {
           >
             Clear
           </button>
+          <span className="w-px h-5 bg-teal-deep/40" />
+          <span className="text-[10px] uppercase tracking-wider text-silver/70">Size</span>
+          {IMG_SIZES.map((sz) => (
+            <button
+              key={sz.id}
+              onClick={() => onChange({ ...seg, imgSize: sz.id })}
+              className={`px-2 py-1 rounded-lg text-xs border ${(seg.imgSize || 'md') === sz.id ? 'bg-teal/20 border-teal text-cream' : 'border-teal-deep/40 text-silver hover:text-cream'}`}
+            >
+              {sz.label}
+            </button>
+          ))}
         </div>
       )}
       {src ? (
+        <div className="flex justify-center">
         <div
           className={`relative inline-block max-w-full select-none ${editing ? 'touch-none' : ''}`}
           onPointerDown={down}
@@ -436,7 +455,8 @@ function StrategyImage({ seg, editing, onChange }) {
           <img
             src={src}
             alt={`${seg.name} strategy map`}
-            className={`rounded-xl border border-teal-deep/30 max-h-[440px] w-auto ${cursor}`}
+            className={`rounded-xl border border-teal-deep/30 ${(seg.imgSize || 'md') === 'full' ? 'w-full h-auto' : 'w-auto'} ${cursor}`}
+            style={(seg.imgSize || 'md') !== 'full' ? { maxHeight: IMG_SIZES.find((z) => z.id === (seg.imgSize || 'md'))?.px, maxWidth: '100%' } : undefined}
             draggable={false}
             loading="lazy"
           />
@@ -459,6 +479,7 @@ function StrategyImage({ seg, editing, onChange }) {
               {i + 1}
             </span>
           ))}
+        </div>
         </div>
       ) : (
         editing && <div className="text-sm text-silver/60 italic">No map yet — upload one below.</div>
