@@ -1,12 +1,28 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useData } from '../App.jsx'
 import { BuildChip, NotesText } from '../lib/icons.jsx'
 
+const LS_KEY = 'kp_infallible_plan_v1'
+const ROLES = ['Heal', 'Support', 'DPS']
+
 const fmt = (s) => {
-  if (s == null) return '—'
+  if (s == null || isNaN(s)) return '—'
   const m = Math.floor(s / 60)
-  const ss = s % 60
-  return `${m}:${String(ss).padStart(2, '0')}`
+  return `${m}:${String(s % 60).padStart(2, '0')}`
+}
+const parseT = (str) => {
+  if (!str) return null
+  const m = String(str).trim().match(/^(\d+):(\d{1,2})$/)
+  if (m) return parseInt(m[1]) * 60 + parseInt(m[2])
+  const n = parseInt(str)
+  return isNaN(n) ? null : n
+}
+
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {} } catch { return {} }
+}
+function saveOverrides(ov) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(ov)); return true } catch { return false }
 }
 
 const KIND_STYLE = {
@@ -14,27 +30,43 @@ const KIND_STYLE = {
   event: 'bg-teal/10 text-teal-light border-teal/40',
   transition: 'bg-silver/10 text-silver border-silver/30',
 }
-
 const STATUS_STYLE = {
   planning: { label: 'Planning', cls: 'bg-silver/10 text-silver border-silver/30' },
   practicing: { label: 'Practicing', cls: 'bg-teal/15 text-teal-light border-teal/40' },
   done: { label: 'DONE', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40' },
 }
-
 const ROLE_STYLE = {
   Heal: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
   Support: 'bg-sky-500/15 text-sky-300 border-sky-500/40',
   DPS: 'bg-rose-500/15 text-rose-300 border-rose-500/40',
 }
 
-function RoleChip({ role }) {
+function RoleChip({ role, onClick }) {
   return (
-    <span
-      className={`inline-flex justify-center w-[4.5rem] shrink-0 px-2 py-0.5 rounded-md border text-[11px] font-semibold ${ROLE_STYLE[role] || ROLE_STYLE.DPS}`}
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!onClick}
+      title={onClick ? 'Click to change role' : undefined}
+      className={`inline-flex justify-center w-[4.5rem] shrink-0 px-2 py-0.5 rounded-md border text-[11px] font-semibold ${ROLE_STYLE[role] || ROLE_STYLE.DPS} ${onClick ? 'cursor-pointer hover:brightness-125' : ''}`}
     >
       {role}
-    </span>
+    </button>
   )
+}
+
+const selCls =
+  'bg-ink/60 border border-teal-deep/40 rounded-lg px-2 py-1 text-sm text-cream focus:border-teal outline-none'
+
+function emptyComp() {
+  const mk = (sub) => [
+    { sub, role: 'Heal', build: '', player: '', note: '' },
+    { sub, role: 'Support', build: '', player: '', note: '' },
+    { sub, role: 'DPS', build: '', player: '', note: '' },
+    { sub, role: 'DPS', build: '', player: '', note: '' },
+    { sub, role: 'DPS', build: '', player: '', note: '' },
+  ]
+  return [...mk(1), ...mk(2)]
 }
 
 function Rules({ overview }) {
@@ -50,11 +82,12 @@ function Rules({ overview }) {
           </div>
         ))}
       </div>
+      <div className="mt-3 text-xs text-silver/70">{overview.source}</div>
     </div>
   )
 }
 
-function WingCard({ w, onOpen }) {
+function WingCard({ w, edited, onOpen }) {
   const fights = w.segments.filter((s) => s.kind === 'boss').length
   const status = STATUS_STYLE[w.status] || STATUS_STYLE.planning
   return (
@@ -64,9 +97,16 @@ function WingCard({ w, onOpen }) {
           <span className="font-display text-2xl text-teal-light">{w.short}</span>
           <span className="font-semibold text-cream group-hover:text-teal-light transition-colors">{w.name}</span>
         </div>
-        <span className={`px-2 py-0.5 rounded-md border text-[10px] uppercase tracking-wider ${status.cls}`}>
-          {status.label}
-        </span>
+        <div className="flex items-center gap-1.5">
+          {edited && (
+            <span className="px-2 py-0.5 rounded-md border border-amber-400/40 bg-amber-400/10 text-amber-300 text-[10px] uppercase tracking-wider">
+              Edited
+            </span>
+          )}
+          <span className={`px-2 py-0.5 rounded-md border text-[10px] uppercase tracking-wider ${status.cls}`}>
+            {status.label}
+          </span>
+        </div>
       </div>
       <div className="flex items-center gap-4 text-sm mb-2">
         <div>
@@ -92,96 +132,374 @@ function WingCard({ w, onOpen }) {
   )
 }
 
-function CompBox({ comp, icons }) {
-  if (!comp || comp.length === 0)
-    return <div className="text-sm text-silver/70 italic">Comp not defined yet — roles pending.</div>
+function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
+  if (!editing) {
+    const isEmpty = !slot.build && !slot.player
+    return (
+      <div className="flex items-center gap-2 text-sm min-h-[30px]">
+        <RoleChip role={slot.role} />
+        {slot.player && <span className="font-semibold text-cream shrink-0">{slot.player.split('|')[0].trim()}</span>}
+        {slot.build ? (
+          <BuildChip name={slot.build} icons={icons} className="text-cream/90" />
+        ) : (
+          isEmpty && <span className="text-silver/50 italic">open slot</span>
+        )}
+        {slot.note && <span className="text-xs text-silver truncate">· {slot.note}</span>}
+      </div>
+    )
+  }
+  const cycleRole = () => {
+    const next = ROLES[(ROLES.indexOf(slot.role) + 1) % ROLES.length]
+    onChange({ ...slot, role: next })
+  }
   return (
-    <div className="grid md:grid-cols-2 gap-3">
-      {[1, 2].map((g) => (
-        <div key={g} className="bg-ink/40 border border-teal-deep/25 rounded-xl p-3">
-          <div className="text-[11px] uppercase tracking-wider text-teal-light/80 mb-2">Subgroup {g}</div>
-          <div className="space-y-1.5">
-            {comp
-              .filter((c) => c.sub === g)
-              .map((c, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm">
-                  <RoleChip role={c.role} />
-                  {c.build ? (
-                    <BuildChip name={c.build} icons={icons} className="text-cream/90" />
-                  ) : (
-                    <span className="text-silver/60 italic">build TBD</span>
-                  )}
-                  {c.note && <span className="text-xs text-silver">· {c.note}</span>}
-                </div>
-              ))}
-          </div>
-        </div>
-      ))}
+    <div className="flex flex-wrap items-center gap-1.5">
+      <RoleChip role={slot.role} onClick={cycleRole} />
+      <select className={selCls} value={slot.player || ''} onChange={(e) => onChange({ ...slot, player: e.target.value })}>
+        <option value="">— player —</option>
+        {players.map((p) => (
+          <option key={p.id} value={p.name}>
+            {p.name.split('|')[0].trim()}
+          </option>
+        ))}
+      </select>
+      <select className={selCls} value={slot.build || ''} onChange={(e) => onChange({ ...slot, build: e.target.value })}>
+        <option value="">— class/build —</option>
+        {builds.map((b) => (
+          <option key={b.id} value={b.name}>
+            {b.name}
+          </option>
+        ))}
+      </select>
+      <input
+        className={`${selCls} flex-1 min-w-[80px]`}
+        placeholder="note"
+        value={slot.note || ''}
+        onChange={(e) => onChange({ ...slot, note: e.target.value })}
+      />
     </div>
   )
 }
 
-function SegmentDetail({ seg, comp, icons }) {
-  const hasContent = seg.strategy || seg.image || (seg.duties && seg.duties.length > 0)
+function StrategyImage({ seg, editing, onChange }) {
+  const pins = seg.pins || []
+  const src = seg.image
+    ? seg.image.startsWith('data:')
+      ? seg.image
+      : `${import.meta.env.BASE_URL}${seg.image}`
+    : null
+
+  const addPin = (e) => {
+    if (!editing) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10
+    onChange({ ...seg, pins: [...pins, { x, y, text: '' }] })
+  }
+  const setPin = (i, text) => onChange({ ...seg, pins: pins.map((p, j) => (j === i ? { ...p, text } : p)) })
+  const delPin = (i) => onChange({ ...seg, pins: pins.filter((_, j) => j !== i) })
+
+  const uploadImage = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => onChange({ ...seg, image: reader.result, pins: [] })
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
   return (
-    <div className="bg-ink/50 border border-teal-deep/25 rounded-xl p-4 space-y-3">
-      {seg.image && (
-        <img
-          src={`${import.meta.env.BASE_URL}${seg.image}`}
-          alt={`${seg.name} strategy map`}
-          className="rounded-xl border border-teal-deep/30 max-h-[420px] w-auto"
-          loading="lazy"
-        />
+    <div className="space-y-2">
+      {src ? (
+        <div className="relative inline-block max-w-full">
+          <img
+            src={src}
+            alt={`${seg.name} strategy map`}
+            className={`rounded-xl border border-teal-deep/30 max-h-[440px] w-auto ${editing ? 'cursor-crosshair' : ''}`}
+            onClick={addPin}
+            loading="lazy"
+          />
+          {pins.map((p, i) => (
+            <span
+              key={i}
+              className="absolute w-6 h-6 -ml-3 -mt-3 rounded-full bg-teal text-ink font-bold text-xs flex items-center justify-center border-2 border-cream shadow-lg select-none"
+              style={{ left: `${p.x}%`, top: `${p.y}%` }}
+              title={p.text}
+            >
+              {i + 1}
+            </span>
+          ))}
+        </div>
+      ) : (
+        editing && <div className="text-sm text-silver/60 italic">No map yet — upload one below.</div>
       )}
-      {seg.strategy && (
-        <div className="text-sm text-cream/90 leading-relaxed">
-          <NotesText text={seg.strategy} icons={icons} />
+      {editing && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <label className="btn btn-ghost text-xs cursor-pointer">
+            {src ? 'Replace image' : 'Upload map image'}
+            <input type="file" accept="image/*" className="hidden" onChange={uploadImage} />
+          </label>
+          {src && (
+            <>
+              <span className="text-xs text-silver/70">Click on the map to drop a numbered marker.</span>
+              <button className="btn btn-ghost text-xs" onClick={() => onChange({ ...seg, image: null, pins: [] })}>
+                Remove image
+              </button>
+            </>
+          )}
         </div>
       )}
-      {seg.duties && seg.duties.length > 0 && (
-        <div>
-          <div className="text-[11px] uppercase tracking-wider text-teal-light/80 mb-1.5">Special duties</div>
-          <div className="space-y-1">
-            {seg.duties.map((d, i) => {
-              const slot = comp?.[d.slot]
-              return (
-                <div key={i} className="flex items-center gap-2 text-sm">
-                  {slot && <RoleChip role={slot.role} />}
-                  {slot?.build && <BuildChip name={slot.build} icons={icons} className="text-cream/90" />}
-                  <span className="text-silver">→ {d.duty}</span>
-                </div>
-              )
-            })}
-          </div>
+      {pins.length > 0 && (
+        <div className="space-y-1">
+          {pins.map((p, i) => (
+            <div key={i} className="flex items-center gap-2 text-sm">
+              <span className="w-5 h-5 rounded-full bg-teal text-ink font-bold text-[11px] flex items-center justify-center shrink-0">
+                {i + 1}
+              </span>
+              {editing ? (
+                <>
+                  <input
+                    className={`${selCls} flex-1`}
+                    placeholder="what happens here…"
+                    value={p.text}
+                    onChange={(e) => setPin(i, e.target.value)}
+                  />
+                  <button className="text-danger/80 hover:text-danger px-1" onClick={() => delPin(i)}>
+                    ✕
+                  </button>
+                </>
+              ) : (
+                <span className="text-cream/90">{p.text || <span className="text-silver/50 italic">…</span>}</span>
+              )}
+            </div>
+          ))}
         </div>
       )}
-      {!hasContent && <div className="text-sm text-silver/70 italic">Strategy not written yet.</div>}
     </div>
   )
 }
 
-function WingDetail({ w, icons, onBack }) {
+function SegmentBlock({ seg, i, count, left, editing, icons, comp, open, onToggle, onChange, onMove, onDelete }) {
+  return (
+    <div>
+      <div
+        className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors ${
+          open ? 'bg-teal-deep/20 border-teal/50' : 'bg-ink/40 border-teal-deep/25 hover:border-teal/40'
+        }`}
+      >
+        {editing ? (
+          <select className={selCls} value={seg.kind} onChange={(e) => onChange({ ...seg, kind: e.target.value })}>
+            <option value="boss">boss</option>
+            <option value="event">event</option>
+            <option value="transition">transition</option>
+          </select>
+        ) : (
+          <span
+            className={`px-2 py-0.5 rounded-md border text-[10px] uppercase tracking-wider shrink-0 ${KIND_STYLE[seg.kind] || KIND_STYLE.event}`}
+          >
+            {seg.kind}
+          </span>
+        )}
+        {editing ? (
+          <input
+            className={`${selCls} flex-1 font-semibold`}
+            value={seg.name}
+            onChange={(e) => onChange({ ...seg, name: e.target.value })}
+          />
+        ) : (
+          <button className="font-semibold text-cream flex-1 text-left" onClick={onToggle}>
+            {seg.name}
+          </button>
+        )}
+        <span className="text-sm text-silver shrink-0 flex items-center gap-1">
+          max{' '}
+          {editing ? (
+            <input
+              className={`${selCls} w-16 text-center`}
+              placeholder="m:ss"
+              defaultValue={seg.target != null ? fmt(seg.target) : ''}
+              onBlur={(e) => onChange({ ...seg, target: parseT(e.target.value) })}
+            />
+          ) : (
+            <span className="font-display text-base text-cream">{fmt(seg.target)}</span>
+          )}
+        </span>
+        <span className="text-sm shrink-0 w-20 text-right">
+          <span className="text-silver">left </span>
+          <span className={`font-display text-base ${left != null && left < 0 ? 'text-danger' : 'text-teal-light'}`}>
+            {left == null ? '—' : fmt(Math.max(left, 0))}
+          </span>
+        </span>
+        {editing ? (
+          <span className="flex items-center gap-0.5 shrink-0">
+            <button className="px-1 text-silver hover:text-cream disabled:opacity-30" disabled={i === 0} onClick={() => onMove(-1)}>↑</button>
+            <button className="px-1 text-silver hover:text-cream disabled:opacity-30" disabled={i === count - 1} onClick={() => onMove(1)}>↓</button>
+            <button className="px-1 text-danger/70 hover:text-danger" onClick={onDelete}>✕</button>
+          </span>
+        ) : (
+          <button className="text-silver/60" onClick={onToggle}>
+            {open ? '▾' : '▸'}
+          </button>
+        )}
+      </div>
+      {(open || editing) && (
+        <div className="mt-1.5 ml-2 bg-ink/50 border border-teal-deep/25 rounded-xl p-4 space-y-3">
+          <StrategyImage seg={seg} editing={editing} onChange={onChange} />
+          {editing ? (
+            <textarea
+              className={`${selCls} w-full min-h-[70px]`}
+              placeholder="Strategy notes for this segment… (you can use {Quickness} {Poison} icon tokens)"
+              value={seg.strategy || ''}
+              onChange={(e) => onChange({ ...seg, strategy: e.target.value })}
+            />
+          ) : (
+            seg.strategy && (
+              <div className="text-sm text-cream/90 leading-relaxed">
+                <NotesText text={seg.strategy} icons={icons} />
+              </div>
+            )
+          )}
+          {!editing && seg.duties?.length > 0 && (
+            <div className="space-y-1">
+              {seg.duties.map((d, j) => {
+                const slot = comp?.[d.slot]
+                return (
+                  <div key={j} className="flex items-center gap-2 text-sm">
+                    {slot && <RoleChip role={slot.role} />}
+                    {slot?.build && <BuildChip name={slot.build} icons={icons} className="text-cream/90" />}
+                    <span className="text-silver">→ {d.duty}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+          {!editing && !seg.strategy && !seg.image && !(seg.duties?.length > 0) && (
+            <div className="text-sm text-silver/70 italic">Strategy not written yet.</div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverride, onClearOverride }) {
+  const [editing, setEditing] = useState(false)
   const [open, setOpen] = useState(null)
+  const w = override || pub
+
+  const update = (patch) => {
+    const next = { ...w, ...patch }
+    if (!saveOverridesFor(pub.id, next)) {
+      alert('Could not save locally (image too large for browser storage). Try a smaller image.')
+      return
+    }
+    onSaveOverride(pub.id, next)
+  }
+  // saved via parent; helper checks quota
+  function saveOverridesFor(id, wing) {
+    const all = loadOverrides()
+    all[id] = wing
+    return saveOverrides(all)
+  }
+
+  const startEditing = () => {
+    if (!override) {
+      const seeded = { ...pub, comp: pub.comp?.length === 10 ? pub.comp : emptyComp() }
+      update(seeded)
+    } else if (!(w.comp?.length === 10)) {
+      update({ comp: emptyComp() })
+    }
+    setEditing(true)
+  }
+
+  const setSeg = (idx, seg) => update({ segments: w.segments.map((s, j) => (j === idx ? seg : s)) })
+  const moveSeg = (idx, dir) => {
+    const segs = [...w.segments]
+    const [x] = segs.splice(idx, 1)
+    segs.splice(idx + dir, 0, x)
+    update({ segments: segs })
+  }
+  const delSeg = (idx) => update({ segments: w.segments.filter((_, j) => j !== idx) })
+  const addSeg = () =>
+    update({
+      segments: [
+        ...w.segments,
+        { id: `seg_${Date.now()}`, name: 'New segment', kind: 'event', target: null, image: null, strategy: '', pins: [], duties: [] },
+      ],
+    })
+
+  const exportPlan = () => {
+    const all = loadOverrides()
+    const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), wings: all }, null, 2)], {
+      type: 'application/json',
+    })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = 'kp-infallible-plan.json'
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+
   const targets = w.segments.map((s) => s.target)
-  const allKnown = targets.every((t) => t != null)
+  const allKnown = targets.length > 0 && targets.every((t) => t != null)
   const planned = targets.reduce((a, t) => a + (t || 0), 0)
   let remaining = w.timeLimit
   const status = STATUS_STYLE[w.status] || STATUS_STYLE.planning
+  const comp = w.comp?.length === 10 ? w.comp : null
 
   return (
     <div className="space-y-4">
-      <button className="btn btn-ghost text-sm" onClick={onBack}>
-        ← All wings
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <button className="btn btn-ghost text-sm" onClick={onBack}>
+          ← All wings
+        </button>
+        <div className="flex items-center gap-2">
+          {override && (
+            <>
+              <button className="btn btn-ghost text-xs" onClick={exportPlan} title="Download your local plan as JSON — send it to publish it for the whole squad">
+                ⬇ Export plan
+              </button>
+              <button
+                className="btn btn-ghost text-xs"
+                onClick={() => {
+                  if (confirm('Discard your local edits for this wing and go back to the published plan?')) {
+                    onClearOverride(pub.id)
+                    setEditing(false)
+                  }
+                }}
+              >
+                Reset to published
+              </button>
+            </>
+          )}
+          <button className={`btn text-sm ${editing ? 'btn-primary' : 'btn-ghost'}`} onClick={() => (editing ? setEditing(false) : startEditing())}>
+            {editing ? '✓ Done editing' : '✎ Edit plan'}
+          </button>
+        </div>
+      </div>
+
+      {override && (
+        <div className="text-xs px-3 py-2 rounded-xl border border-amber-400/30 bg-amber-400/10 text-amber-200">
+          This plan has local edits saved on <b>this device only</b>. Use <b>Export plan</b> and send the file to publish it for the whole squad.
+        </div>
+      )}
 
       <div className="card p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
           <div className="flex items-center gap-3">
             <span className="font-display text-3xl text-teal-light">{w.short}</span>
             <span className="font-display text-2xl text-cream">{w.name}</span>
-            <span className={`px-2 py-0.5 rounded-md border text-[10px] uppercase tracking-wider ${status.cls}`}>
-              {status.label}
-            </span>
+            {editing ? (
+              <select className={selCls} value={w.status} onChange={(e) => update({ status: e.target.value })}>
+                <option value="planning">Planning</option>
+                <option value="practicing">Practicing</option>
+                <option value="done">Done</option>
+              </select>
+            ) : (
+              <span className={`px-2 py-0.5 rounded-md border text-[10px] uppercase tracking-wider ${status.cls}`}>
+                {status.label}
+              </span>
+            )}
           </div>
           <div className="text-right">
             <div className="text-[11px] uppercase tracking-wider text-silver">Time limit</div>
@@ -211,57 +529,84 @@ function WingDetail({ w, icons, onBack }) {
       </div>
 
       <div className="card p-5">
-        <div className="font-display text-xl text-cream mb-3">Squad comp (roles only)</div>
-        <CompBox comp={w.comp} icons={icons} />
+        <div className="font-display text-xl text-cream mb-3">Squad comp</div>
+        {comp ? (
+          <div className="grid md:grid-cols-2 gap-3">
+            {[1, 2].map((g) => (
+              <div key={g} className="bg-ink/40 border border-teal-deep/25 rounded-xl p-3">
+                <div className="text-[11px] uppercase tracking-wider text-teal-light/80 mb-2">Subgroup {g}</div>
+                <div className="space-y-1.5">
+                  {comp.map((c, i) =>
+                    c.sub === g ? (
+                      <CompEditorRow
+                        key={i}
+                        slot={c}
+                        editing={editing}
+                        builds={builds}
+                        players={players}
+                        icons={icons}
+                        onChange={(slot) => update({ comp: comp.map((x, j) => (j === i ? slot : x)) })}
+                      />
+                    ) : null
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-silver/70 italic">
+            Comp not defined yet — hit <b>Edit plan</b> to build it (role, class and player per slot).
+          </div>
+        )}
       </div>
 
       <div className="card p-5">
-        <div className="font-display text-xl text-cream mb-1">Plan — target maximums</div>
+        <div className="flex items-center justify-between mb-1">
+          <div className="font-display text-xl text-cream">Plan — target maximums</div>
+          {editing && (
+            <button className="btn btn-ghost text-xs" onClick={addSeg}>
+              + Add segment
+            </button>
+          )}
+        </div>
         <div className="text-xs text-silver mb-3">
-          Budget per segment. "Left" = time remaining on the wing clock if every target is hit. Click a segment for
-          strategy, map and duties.
+          Budget per segment. "Left" = time remaining on the wing clock if every target is hit.
+          {!editing && ' Click a segment for strategy, map and duties.'}
         </div>
         <div className="space-y-1.5">
-          {w.segments.map((seg) => {
+          {w.segments.map((seg, i) => {
             if (seg.target != null && remaining != null) remaining -= seg.target
             const left = seg.target != null && remaining != null ? remaining : null
             if (seg.target == null) remaining = null
-            const isOpen = open === seg.id
             return (
-              <div key={seg.id}>
-                <button
-                  onClick={() => setOpen(isOpen ? null : seg.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border text-left transition-colors ${
-                    isOpen ? 'bg-teal-deep/20 border-teal/50' : 'bg-ink/40 border-teal-deep/25 hover:border-teal/40'
-                  }`}
-                >
-                  <span
-                    className={`px-2 py-0.5 rounded-md border text-[10px] uppercase tracking-wider shrink-0 ${KIND_STYLE[seg.kind] || KIND_STYLE.event}`}
-                  >
-                    {seg.kind}
-                  </span>
-                  <span className="font-semibold text-cream flex-1">{seg.name}</span>
-                  <span className="text-sm text-silver shrink-0">
-                    max <span className="font-display text-base text-cream">{fmt(seg.target)}</span>
-                  </span>
-                  <span className="text-sm shrink-0 w-24 text-right">
-                    <span className="text-silver">left </span>
-                    <span className={`font-display text-base ${left != null && left < 0 ? 'text-danger' : 'text-teal-light'}`}>
-                      {left == null ? '—' : fmt(Math.max(left, 0))}
-                    </span>
-                  </span>
-                  <span className="text-silver/60">{isOpen ? '▾' : '▸'}</span>
-                </button>
-                {isOpen && (
-                  <div className="mt-1.5 ml-2">
-                    <SegmentDetail seg={seg} comp={w.comp} icons={icons} />
-                  </div>
-                )}
-              </div>
+              <SegmentBlock
+                key={seg.id || i}
+                seg={seg}
+                i={i}
+                count={w.segments.length}
+                left={left}
+                editing={editing}
+                icons={icons}
+                comp={comp}
+                open={open === (seg.id || i)}
+                onToggle={() => setOpen(open === (seg.id || i) ? null : seg.id || i)}
+                onChange={(s) => setSeg(i, s)}
+                onMove={(dir) => moveSeg(i, dir)}
+                onDelete={() => confirm(`Delete segment "${seg.name}"?`) && delSeg(i)}
+              />
             )
           })}
         </div>
-        {w.notes && <div className="mt-3 text-xs text-silver italic">{w.notes}</div>}
+        {editing ? (
+          <textarea
+            className={`${selCls} w-full mt-3`}
+            placeholder="Wing notes…"
+            value={w.notes || ''}
+            onChange={(e) => update({ notes: e.target.value })}
+          />
+        ) : (
+          w.notes && <div className="mt-3 text-xs text-silver italic">{w.notes}</div>
+        )}
       </div>
     </div>
   )
@@ -270,18 +615,40 @@ function WingDetail({ w, icons, onBack }) {
 export default function Infallible() {
   const data = useData()
   const [wingId, setWingId] = useState(null)
+  const [ovVersion, setOvVersion] = useState(0)
   const inf = data?.infallible
+  const overrides = useMemo(() => loadOverrides(), [ovVersion])
   if (!inf) return <div className="card p-10 text-center">No Infallible data.</div>
 
-  const wing = inf.wings.find((w) => w.id === wingId)
-  if (wing) return <WingDetail w={wing} icons={data.icons} onBack={() => setWingId(null)} />
+  const saveOv = () => setOvVersion((v) => v + 1)
+  const clearOv = (id) => {
+    const all = loadOverrides()
+    delete all[id]
+    saveOverrides(all)
+    setOvVersion((v) => v + 1)
+  }
+
+  const pub = inf.wings.find((w) => w.id === wingId)
+  if (pub)
+    return (
+      <WingDetail
+        pub={pub}
+        override={overrides[pub.id] || null}
+        icons={data.icons}
+        builds={data.builds?.builds || []}
+        players={data.players?.players || []}
+        onBack={() => setWingId(null)}
+        onSaveOverride={saveOv}
+        onClearOverride={clearOv}
+      />
+    )
 
   return (
     <div className="space-y-4">
       <Rules overview={inf.overview} />
       <div className="grid md:grid-cols-2 gap-4">
         {inf.wings.map((w) => (
-          <WingCard key={w.id} w={w} onOpen={() => setWingId(w.id)} />
+          <WingCard key={w.id} w={overrides[w.id] || w} edited={!!overrides[w.id]} onOpen={() => setWingId(w.id)} />
         ))}
       </div>
     </div>
