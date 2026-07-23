@@ -2,142 +2,559 @@
   "updated": "2026-07-23",
   "overview": {
     "title": "Infallible",
-    "description": "Meta-achievement: complete the full 'Down and Out' series — one sub-achievement per raid wing. Widely considered the hardest raid achievement in GW2.",
+    "description": "Meta-achievement (ID 9106): \"Complete all Down and Out achievements\" — one per raid wing, 8 total. Grants the Infallible title. Considered the hardest raid achievement in GW2.",
     "rules": [
-      "Full wing clear within a strict time limit (timer trigger varies per wing)",
-      "NO downstate for anyone during the entire wing",
-      "Every encounter that has a Challenge Mode must be done ON Challenge Mode",
-      "W8: Ura must be done on LEGENDARY Challenge Mode",
-      "Quickplay kills don't count"
+      "Fully clear the wing within the time limit, starting at the wing's trigger point (official in-game rule)",
+      "No one in the squad may be DOWNED during the entire wing (official in-game rule)",
+      "If a boss has a Challenge Mode, the CM must be enabled to earn credit (official in-game rule, W3-W8)",
+      "W8: Ura must be done in LEGENDARY mode (official in-game rule)",
+      "Cannot be done with Emboldened enabled (official in-game rule)"
     ],
-    "source": "Snow Crows — The New Raiding Achievements (updated Mar 2026)"
+    "source": "Official GW2 API (/v2/achievements). Time limit values are not published in game data; numbers below are community-documented (Snow Crows, Mar 2026) and pending our own in-game verification."
   },
   "wings": [
     {
-      "id": "w1", "short": "W1", "name": "Spirit Vale",
-      "timeLimit": 720, "timerTrigger": "Timer starts when Vale Guardian becomes vulnerable",
+      "id": "w1",
+      "short": "W1",
+      "name": "Spirit Vale",
+      "timeLimit": 720,
+      "timerTrigger": "Official: \"Starting at the Vale Guardian…\" — community: timer starts as VG becomes vulnerable",
       "status": "planning",
       "cms": [],
       "comp": [
-        { "sub": 1, "role": "Heal", "build": "", "note": "" },
-        { "sub": 1, "role": "Support", "build": "", "note": "" },
-        { "sub": 1, "role": "DPS", "build": "", "note": "" },
-        { "sub": 1, "role": "DPS", "build": "", "note": "" },
-        { "sub": 1, "role": "DPS", "build": "", "note": "" },
-        { "sub": 2, "role": "Heal", "build": "", "note": "" },
-        { "sub": 2, "role": "Support", "build": "", "note": "" },
-        { "sub": 2, "role": "DPS", "build": "", "note": "" },
-        { "sub": 2, "role": "DPS", "build": "", "note": "" },
-        { "sub": 2, "role": "DPS", "build": "", "note": "" }
+        {
+          "sub": 1,
+          "role": "Heal",
+          "build": "",
+          "note": ""
+        },
+        {
+          "sub": 1,
+          "role": "Support",
+          "build": "",
+          "note": ""
+        },
+        {
+          "sub": 1,
+          "role": "DPS",
+          "build": "",
+          "note": ""
+        },
+        {
+          "sub": 1,
+          "role": "DPS",
+          "build": "",
+          "note": ""
+        },
+        {
+          "sub": 1,
+          "role": "DPS",
+          "build": "",
+          "note": ""
+        },
+        {
+          "sub": 2,
+          "role": "Heal",
+          "build": "",
+          "note": ""
+        },
+        {
+          "sub": 2,
+          "role": "Support",
+          "build": "",
+          "note": ""
+        },
+        {
+          "sub": 2,
+          "role": "DPS",
+          "build": "",
+          "note": ""
+        },
+        {
+          "sub": 2,
+          "role": "DPS",
+          "build": "",
+          "note": ""
+        },
+        {
+          "sub": 2,
+          "role": "DPS",
+          "build": "",
+          "note": ""
+        }
       ],
       "segments": [
-        { "id": "vg", "name": "Vale Guardian", "kind": "boss", "target": 115, "image": null, "strategy": "", "duties": [] },
-        { "id": "rift_transition", "name": "Transition to Rifts", "kind": "transition", "target": 20, "image": null, "strategy": "", "duties": [] },
-        { "id": "rifts", "name": "Spirit Woods — Rifts", "kind": "event", "target": 190, "image": null, "strategy": "", "duties": [] },
-        { "id": "sr", "name": "Spirit Run", "kind": "event", "target": 50, "image": null, "strategy": "", "duties": [] },
-        { "id": "buttons", "name": "Buttons", "kind": "event", "target": 15, "image": null, "strategy": "", "duties": [] },
-        { "id": "gors_transition", "name": "Transition to Gorseval", "kind": "transition", "target": 15, "image": null, "strategy": "", "duties": [] },
-        { "id": "gorseval", "name": "Gorseval", "kind": "boss", "target": 105, "image": null, "strategy": "", "duties": [] },
-        { "id": "pre_sabetha", "name": "Pre-Sabetha (bandits)", "kind": "event", "target": 65, "image": null, "strategy": "", "duties": [] },
-        { "id": "sabetha", "name": "Sabetha", "kind": "boss", "target": 175, "image": null, "strategy": "", "duties": [] }
+        {
+          "id": "vg",
+          "name": "Vale Guardian",
+          "kind": "boss",
+          "target": 115,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "rift_transition",
+          "name": "Transition to Rifts",
+          "kind": "transition",
+          "target": 20,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "rifts",
+          "name": "Spirit Woods — Rifts",
+          "kind": "event",
+          "target": 190,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "sr",
+          "name": "Spirit Run",
+          "kind": "event",
+          "target": 50,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "buttons",
+          "name": "Buttons",
+          "kind": "event",
+          "target": 15,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "gors_transition",
+          "name": "Transition to Gorseval",
+          "kind": "transition",
+          "target": 15,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "gorseval",
+          "name": "Gorseval",
+          "kind": "boss",
+          "target": 105,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "pre_sabetha",
+          "name": "Pre-Sabetha (bandits)",
+          "kind": "event",
+          "target": 65,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "sabetha",
+          "name": "Sabetha",
+          "kind": "boss",
+          "target": 175,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        }
       ],
-      "notes": "Segment targets seeded from a reference run sheet — adjust to KP's own plan."
+      "notes": "Segment targets seeded from a reference run sheet — adjust to KP's own plan.",
+      "achievement": {
+        "id": 9154,
+        "name": "Down and Out: Spirit Vale"
+      }
     },
     {
-      "id": "w2", "short": "W2", "name": "Salvation Pass",
-      "timeLimit": 690, "timerTrigger": "Timer starts when the first mushroom is eaten (Slothasor wakes)",
+      "id": "w2",
+      "short": "W2",
+      "name": "Salvation Pass",
+      "timeLimit": 690,
+      "timerTrigger": "Official: \"Starting at Slothasor…\" — community: timer starts when the first mushroom is eaten",
       "status": "planning",
       "cms": [],
       "comp": [],
       "segments": [
-        { "id": "slothasor", "name": "Slothasor", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "trio", "name": "Bandit Trio", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "matthias", "name": "Matthias", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+        {
+          "id": "slothasor",
+          "name": "Slothasor",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "trio",
+          "name": "Bandit Trio",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "matthias",
+          "name": "Matthias",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        }
       ],
-      "notes": ""
+      "notes": "",
+      "achievement": {
+        "id": 9194,
+        "name": "Down and Out: Salvation Pass"
+      }
     },
     {
-      "id": "w3", "short": "W3", "name": "Stronghold of the Faithful",
-      "timeLimit": 810, "timerTrigger": "Timer starts after Glenna's initial dialogue (Escort counts!)",
+      "id": "w3",
+      "short": "W3",
+      "name": "Stronghold of the Faithful",
+      "timeLimit": 810,
+      "timerTrigger": "Official: \"Starting by escorting Glenna to the stronghold…\" — Escort counts, clock runs from her initial dialogue",
       "status": "planning",
-      "cms": ["Keep Construct"],
+      "cms": [
+        "Keep Construct"
+      ],
       "comp": [],
       "segments": [
-        { "id": "escort", "name": "Escort", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "keep_construct", "name": "Keep Construct (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "twisted_castle", "name": "Twisted Castle", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "xera", "name": "Xera", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+        {
+          "id": "escort",
+          "name": "Escort",
+          "kind": "event",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "keep_construct",
+          "name": "Keep Construct (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "twisted_castle",
+          "name": "Twisted Castle",
+          "kind": "event",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "xera",
+          "name": "Xera",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        }
       ],
-      "notes": ""
+      "notes": "",
+      "achievement": {
+        "id": 9199,
+        "name": "Down and Out: Stronghold of the Faithful"
+      }
     },
     {
-      "id": "w4", "short": "W4", "name": "Bastion of the Penitent",
-      "timeLimit": 810, "timerTrigger": "Timer starts right after talking to Glenna (ticks while she walks!)",
+      "id": "w4",
+      "short": "W4",
+      "name": "Bastion of the Penitent",
+      "timeLimit": 810,
+      "timerTrigger": "Official: \"Starting by following Glenna…\" — clock runs right after talking to her",
       "status": "planning",
-      "cms": ["Cairn", "Mursaat Overseer", "Samarog", "Deimos"],
+      "cms": [
+        "Cairn",
+        "Mursaat Overseer",
+        "Samarog",
+        "Deimos"
+      ],
       "comp": [],
       "segments": [
-        { "id": "cairn", "name": "Cairn (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "mursaat", "name": "Mursaat Overseer (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "samarog", "name": "Samarog (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "deimos", "name": "Deimos (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+        {
+          "id": "cairn",
+          "name": "Cairn (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "mursaat",
+          "name": "Mursaat Overseer (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "samarog",
+          "name": "Samarog (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "deimos",
+          "name": "Deimos (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        }
       ],
-      "notes": ""
+      "notes": "",
+      "achievement": {
+        "id": 9159,
+        "name": "Down and Out: Bastion of the Penitent"
+      }
     },
     {
-      "id": "w5", "short": "W5", "name": "Hall of Chains",
-      "timeLimit": 930, "timerTrigger": "Timer starts on entering combat with Soulless Horror (Desmina)",
+      "id": "w5",
+      "short": "W5",
+      "name": "Hall of Chains",
+      "timeLimit": 930,
+      "timerTrigger": "Official: \"Starting at the Soulless Horror…\" — timer starts on entering combat with Desmina",
       "status": "planning",
-      "cms": ["Soulless Horror", "Dhuum"],
+      "cms": [
+        "Soulless Horror",
+        "Dhuum"
+      ],
       "comp": [],
       "segments": [
-        { "id": "soulless_horror", "name": "Soulless Horror (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "river", "name": "River of Souls", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "statues", "name": "Statues (Eyes / Eater / Broken King)", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "dhuum", "name": "Dhuum (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+        {
+          "id": "soulless_horror",
+          "name": "Soulless Horror (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "river",
+          "name": "River of Souls",
+          "kind": "event",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "statues",
+          "name": "Statues (Eyes / Eater / Broken King)",
+          "kind": "event",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "dhuum",
+          "name": "Dhuum (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        }
       ],
-      "notes": ""
+      "notes": "",
+      "achievement": {
+        "id": 9184,
+        "name": "Down and Out: Hall of Chains"
+      }
     },
     {
-      "id": "w6", "short": "W6", "name": "Mythwright Gambit",
-      "timeLimit": 930, "timerTrigger": "Timer starts on entering combat with Conjured Amalgamate",
+      "id": "w6",
+      "short": "W6",
+      "name": "Mythwright Gambit",
+      "timeLimit": 930,
+      "timerTrigger": "Official: \"Starting at the Conjured Amalgamate…\" — timer starts on entering combat with CA",
       "status": "planning",
-      "cms": ["Conjured Amalgamate", "Twin Largos", "Qadim"],
+      "cms": [
+        "Conjured Amalgamate",
+        "Twin Largos",
+        "Qadim"
+      ],
       "comp": [],
       "segments": [
-        { "id": "ca", "name": "Conjured Amalgamate (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "largos", "name": "Twin Largos (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "qadim", "name": "Qadim (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+        {
+          "id": "ca",
+          "name": "Conjured Amalgamate (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "largos",
+          "name": "Twin Largos (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "qadim",
+          "name": "Qadim (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        }
       ],
-      "notes": ""
+      "notes": "",
+      "achievement": {
+        "id": 9118,
+        "name": "Down and Out: Mythwright Gambit"
+      }
     },
     {
-      "id": "w7", "short": "W7", "name": "The Key of Ahdashim",
-      "timeLimit": 990, "timerTrigger": "Timer starts on triggering Glenna's dialogue — open the gate fast",
+      "id": "w7",
+      "short": "W7",
+      "name": "The Key of Ahdashim",
+      "timeLimit": 990,
+      "timerTrigger": "Official: \"Starting by getting Glenna and the key to Ahdashim's front gate…\"",
       "status": "planning",
-      "cms": ["Sabir", "Adina", "Qadim the Peerless"],
+      "cms": [
+        "Sabir",
+        "Adina",
+        "Qadim the Peerless"
+      ],
       "comp": [],
       "segments": [
-        { "id": "gate", "name": "Gate + split to cardinals", "kind": "transition", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "sabir", "name": "Sabir (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "adina", "name": "Adina (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "qtp", "name": "Qadim the Peerless (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+        {
+          "id": "gate",
+          "name": "Gate + split to cardinals",
+          "kind": "transition",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "sabir",
+          "name": "Sabir (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "adina",
+          "name": "Adina (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "qtp",
+          "name": "Qadim the Peerless (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        }
       ],
-      "notes": ""
+      "notes": "",
+      "achievement": {
+        "id": 9164,
+        "name": "Down and Out: The Key of Ahdashim"
+      }
     },
     {
-      "id": "w8", "short": "W8", "name": "Mount Balrior",
-      "timeLimit": 1650, "timerTrigger": "Timer starts on clearing the first titanspawn camp",
+      "id": "w8",
+      "short": "W8",
+      "name": "Mount Balrior",
+      "timeLimit": 1650,
+      "timerTrigger": "Official: \"Starting at the legendary sentient conduit…\" — NOT at the camp clear",
       "status": "planning",
-      "cms": ["Greer (CM)", "Decima (CM)", "Ura (LEGENDARY CM)"],
+      "cms": [
+        "Greer (CM)",
+        "Decima (CM)",
+        "Ura (LEGENDARY mode)"
+      ],
       "comp": [],
       "segments": [
-        { "id": "camp", "name": "Titanspawn camp (pre-event)", "kind": "event", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "greer", "name": "Greer (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "decima", "name": "Decima (CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] },
-        { "id": "ura", "name": "Ura (LEGENDARY CM)", "kind": "boss", "target": null, "image": null, "strategy": "", "duties": [] }
+        {
+          "id": "camp",
+          "name": "Titanspawn camp (before/at timer start)",
+          "kind": "event",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "conduit",
+          "name": "Legendary sentient conduit — TIMER STARTS",
+          "kind": "event",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "greer",
+          "name": "Greer (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "decima",
+          "name": "Decima (CM)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        },
+        {
+          "id": "ura",
+          "name": "Ura (LEGENDARY mode)",
+          "kind": "boss",
+          "target": null,
+          "image": null,
+          "strategy": "",
+          "duties": []
+        }
       ],
-      "notes": "Two CMs plus Ura Legendary CM inside the 27:30 — the long timer is deceiving."
+      "notes": "Official text: \"Ura must be done in legendary mode.\" First-clear bits also mention defeating the sentient conduit and \"the blighted beast and his empowering allies\" — confirm in-game where these fall in the route.",
+      "achievement": {
+        "id": 9187,
+        "name": "Down and Out: Mount Balrior"
+      }
     }
   ]
 }
