@@ -310,6 +310,7 @@ const TOOLS = [
   { id: 'line', icon: '╱', label: 'Line' },
   { id: 'arrow', icon: '➔', label: 'Arrow' },
   { id: 'ellipse', icon: '◯', label: 'Circle' },
+  { id: 'text', icon: '🄰', label: 'Text' },
   { id: 'erase', icon: '🧽', label: 'Erase' },
 ]
 
@@ -365,6 +366,7 @@ function StrategyImage({ seg, editing, onChange }) {
   const [dashed, setDashed] = useState(false)
   const [temp, setTemp] = useState(null)
   const [armClear, setArmClear] = useState(false)
+  const [editText, setEditText] = useState(null)
   const pins = seg.pins || []
   const draw = seg.draw || []
   const src = seg.image
@@ -387,6 +389,11 @@ function StrategyImage({ seg, editing, onChange }) {
     const { x, y, rect } = norm(e)
     if (tool === 'pin') {
       onChange({ ...seg, pins: [...pins, { x, y, text: '' }] })
+      return
+    }
+    if (tool === 'text') {
+      onChange({ ...seg, draw: [...draw, { t: 'text', x, y, text: '', c: color }] })
+      setEditText(draw.length)
       return
     }
     e.currentTarget.setPointerCapture?.(e.pointerId)
@@ -548,14 +555,57 @@ function StrategyImage({ seg, editing, onChange }) {
             loading="lazy"
           />
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {draw.map((sh, i) => (
-              <Shape key={i} sh={sh} erasable={editing && tool === 'erase'} onErase={() => eraseShape(i)} />
-            ))}
+            {draw.map((sh, i) =>
+              sh.t === 'text' ? null : (
+                <Shape key={i} sh={sh} erasable={editing && tool === 'erase'} onErase={() => eraseShape(i)} />
+              )
+            )}
             {temp && <Shape sh={temp.t === 'ellipse' ? temp : temp} erasable={false} />}
             {temp?.t === 'arrow' && temp.rect && (
               <Shape sh={{ t: 'head', pts: arrowHead(temp.x1, temp.y1, temp.x2, temp.y2, temp.rect), c: temp.c }} erasable={false} />
             )}
           </svg>
+          {draw.map((sh, i) => {
+            if (sh.t !== 'text') return null
+            const drawing = editing && ['pen', 'line', 'arrow', 'ellipse'].includes(tool)
+            if (editing && editText === i) {
+              return (
+                <input
+                  key={`t${i}`}
+                  autoFocus
+                  defaultValue={sh.text}
+                  placeholder="type…"
+                  className="absolute -translate-x-1/2 -translate-y-1/2 bg-ink/90 border border-teal rounded-md px-1.5 py-0.5 text-sm font-semibold outline-none min-w-[90px] w-40"
+                  style={{ left: `${sh.x}%`, top: `${sh.y}%`, color: sh.c }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onBlur={(e) => {
+                    const v = e.target.value.trim()
+                    setEditText(null)
+                    onChange({ ...seg, draw: v ? draw.map((d, j) => (j === i ? { ...d, text: v } : d)) : draw.filter((_, j) => j !== i) })
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.target.blur()
+                    if (e.key === 'Escape') e.target.blur()
+                  }}
+                />
+              )
+            }
+            return (
+              <span
+                key={`t${i}`}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 px-1 rounded bg-ink/60 text-sm font-semibold whitespace-pre select-none ${drawing ? 'pointer-events-none' : ''} ${editing && (tool === 'erase' || tool === 'text') ? 'cursor-pointer' : ''} ${editing && tool === 'erase' ? 'ring-1 ring-danger' : ''}`}
+                style={{ left: `${sh.x}%`, top: `${sh.y}%`, color: sh.c, textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}
+                onPointerDown={(e) => {
+                  if (!editing) return
+                  e.stopPropagation()
+                  if (tool === 'erase') eraseShape(i)
+                  else if (tool === 'text') setEditText(i)
+                }}
+              >
+                {sh.text}
+              </span>
+            )
+          })}
           {pins.map((p, i) => {
             const interactive = !editing || tool === 'erase' || tool === 'pin'
             return (
@@ -597,7 +647,7 @@ function StrategyImage({ seg, editing, onChange }) {
           {src && (
             <>
               <span className="text-xs text-silver/70">
-                Pick a tool above — Marker drops numbered notes, the rest draw on the map.
+                Pick a tool above — Marker drops numbered notes, Text writes on the map, the rest draw.
               </span>
               <button className="btn btn-ghost text-xs" onClick={() => onChange({ ...seg, image: null, pins: [], draw: [] })}>
                 Remove image
