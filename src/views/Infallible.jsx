@@ -58,6 +58,60 @@ function RoleChip({ role, onClick }) {
 const selCls =
   'bg-ink/60 border border-teal-deep/40 rounded-lg px-2 py-1 text-sm text-cream focus:border-teal outline-none'
 
+// Uncontrolled text field that commits on blur/Enter — immune to re-render focus loss.
+function Field({ value, onCommit, className = '', textarea = false, placeholder = '' }) {
+  const props = {
+    key: value ?? '',
+    defaultValue: value ?? '',
+    placeholder,
+    className: `${selCls} ${className}`,
+    onBlur: (e) => e.target.value !== (value ?? '') && onCommit(e.target.value),
+    onKeyDown: textarea ? undefined : (e) => e.key === 'Enter' && e.target.blur(),
+  }
+  return textarea ? <textarea {...props} /> : <input {...props} />
+}
+
+// mm : ss editor — numbers only, commits on blur.
+function TimeField({ seconds, onCommit }) {
+  const m = seconds != null ? Math.floor(seconds / 60) : ''
+  const sec = seconds != null ? seconds % 60 : ''
+  const commit = (mv, sv) => {
+    if (mv === '' && sv === '') return onCommit(null)
+    const mm = parseInt(mv || 0, 10)
+    const ss = Math.min(parseInt(sv || 0, 10), 59)
+    onCommit((isNaN(mm) ? 0 : mm) * 60 + (isNaN(ss) ? 0 : ss))
+  }
+  const num = 'w-12 text-center appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      <input
+        key={`m${m}`}
+        type="number"
+        min="0"
+        inputMode="numeric"
+        placeholder="min"
+        defaultValue={m}
+        className={`${selCls} ${num}`}
+        onBlur={(e) => commit(e.target.value, String(sec))}
+        onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+      />
+      <span className="text-silver font-bold">:</span>
+      <input
+        key={`s${sec}`}
+        type="number"
+        min="0"
+        max="59"
+        inputMode="numeric"
+        placeholder="sec"
+        defaultValue={sec}
+        className={`${selCls} ${num}`}
+        onBlur={(e) => commit(String(m), e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+      />
+    </span>
+  )
+}
+
 function emptyComp() {
   const mk = (sub) => [
     { sub, role: 'Heal', build: '', player: '', note: '' },
@@ -155,14 +209,20 @@ function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <RoleChip role={slot.role} onClick={cycleRole} />
-      <select className={selCls} value={slot.player || ''} onChange={(e) => onChange({ ...slot, player: e.target.value })}>
-        <option value="">— player —</option>
+      <input
+        key={slot.player || ''}
+        defaultValue={slot.player || ''}
+        placeholder="player"
+        list="kp-roster-names"
+        className={`${selCls} w-28`}
+        onBlur={(e) => e.target.value !== (slot.player || '') && onChange({ ...slot, player: e.target.value })}
+        onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+      />
+      <datalist id="kp-roster-names">
         {players.map((p) => (
-          <option key={p.id} value={p.name}>
-            {p.name.split('|')[0].trim()}
-          </option>
+          <option key={p.id} value={p.name.split('|')[0].trim()} />
         ))}
-      </select>
+      </datalist>
       <select className={selCls} value={slot.build || ''} onChange={(e) => onChange({ ...slot, build: e.target.value })}>
         <option value="">— class/build —</option>
         {builds.map((b) => (
@@ -171,12 +231,7 @@ function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
           </option>
         ))}
       </select>
-      <input
-        className={`${selCls} flex-1 min-w-[80px]`}
-        placeholder="note"
-        value={slot.note || ''}
-        onChange={(e) => onChange({ ...slot, note: e.target.value })}
-      />
+      <Field value={slot.note} placeholder="note" className="flex-1 min-w-[80px]" onCommit={(v) => onChange({ ...slot, note: v })} />
     </div>
   )
 }
@@ -258,12 +313,7 @@ function StrategyImage({ seg, editing, onChange }) {
               </span>
               {editing ? (
                 <>
-                  <input
-                    className={`${selCls} flex-1`}
-                    placeholder="what happens here…"
-                    value={p.text}
-                    onChange={(e) => setPin(i, e.target.value)}
-                  />
+                  <Field value={p.text} placeholder="what happens here…" className="flex-1" onCommit={(v) => setPin(i, v)} />
                   <button className="text-danger/80 hover:text-danger px-1" onClick={() => delPin(i)}>
                     ✕
                   </button>
@@ -301,11 +351,7 @@ function SegmentBlock({ seg, i, count, left, editing, icons, comp, open, onToggl
           </span>
         )}
         {editing ? (
-          <input
-            className={`${selCls} flex-1 font-semibold`}
-            value={seg.name}
-            onChange={(e) => onChange({ ...seg, name: e.target.value })}
-          />
+          <Field value={seg.name} className="flex-1 font-semibold" onCommit={(v) => onChange({ ...seg, name: v })} />
         ) : (
           <button className="font-semibold text-cream flex-1 text-left" onClick={onToggle}>
             {seg.name}
@@ -314,12 +360,7 @@ function SegmentBlock({ seg, i, count, left, editing, icons, comp, open, onToggl
         <span className="text-sm text-silver shrink-0 flex items-center gap-1">
           max{' '}
           {editing ? (
-            <input
-              className={`${selCls} w-16 text-center`}
-              placeholder="m:ss"
-              defaultValue={seg.target != null ? fmt(seg.target) : ''}
-              onBlur={(e) => onChange({ ...seg, target: parseT(e.target.value) })}
-            />
+            <TimeField seconds={seg.target} onCommit={(v) => onChange({ ...seg, target: v })} />
           ) : (
             <span className="font-display text-base text-cream">{fmt(seg.target)}</span>
           )}
@@ -330,27 +371,27 @@ function SegmentBlock({ seg, i, count, left, editing, icons, comp, open, onToggl
             {left == null ? '—' : fmt(Math.max(left, 0))}
           </span>
         </span>
-        {editing ? (
+        {editing && (
           <span className="flex items-center gap-0.5 shrink-0">
             <button className="px-1 text-silver hover:text-cream disabled:opacity-30" disabled={i === 0} onClick={() => onMove(-1)}>↑</button>
             <button className="px-1 text-silver hover:text-cream disabled:opacity-30" disabled={i === count - 1} onClick={() => onMove(1)}>↓</button>
             <button className="px-1 text-danger/70 hover:text-danger" onClick={onDelete}>✕</button>
           </span>
-        ) : (
-          <button className="text-silver/60" onClick={onToggle}>
-            {open ? '▾' : '▸'}
-          </button>
         )}
+        <button className="text-silver/60 px-1" onClick={onToggle} title={editing ? 'Open to edit strategy, map & notes' : ''}>
+          {open ? '▾' : '▸'}
+        </button>
       </div>
-      {(open || editing) && (
+      {open && (
         <div className="mt-1.5 ml-2 bg-ink/50 border border-teal-deep/25 rounded-xl p-4 space-y-3">
           <StrategyImage seg={seg} editing={editing} onChange={onChange} />
           {editing ? (
-            <textarea
-              className={`${selCls} w-full min-h-[70px]`}
+            <Field
+              textarea
+              value={seg.strategy}
               placeholder="Strategy notes for this segment… (you can use {Quickness} {Poison} icon tokens)"
-              value={seg.strategy || ''}
-              onChange={(e) => onChange({ ...seg, strategy: e.target.value })}
+              className="w-full min-h-[70px]"
+              onCommit={(v) => onChange({ ...seg, strategy: v })}
             />
           ) : (
             seg.strategy && (
@@ -571,7 +612,7 @@ function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverr
         </div>
         <div className="text-xs text-silver mb-3">
           Budget per segment. "Left" = time remaining on the wing clock if every target is hit.
-          {!editing && ' Click a segment for strategy, map and duties.'}
+          {editing ? ' Open a segment (▸) to edit its strategy, map and markers.' : ' Click a segment for strategy, map and duties.'}
         </div>
         <div className="space-y-1.5">
           {w.segments.map((seg, i) => {
@@ -598,12 +639,7 @@ function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverr
           })}
         </div>
         {editing ? (
-          <textarea
-            className={`${selCls} w-full mt-3`}
-            placeholder="Wing notes…"
-            value={w.notes || ''}
-            onChange={(e) => update({ notes: e.target.value })}
-          />
+          <Field textarea value={w.notes} placeholder="Wing notes…" className="w-full mt-3" onCommit={(v) => update({ notes: v })} />
         ) : (
           w.notes && <div className="mt-3 text-xs text-silver italic">{w.notes}</div>
         )}
