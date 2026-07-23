@@ -568,6 +568,7 @@ function StrategyImage({ seg, editing, onChange }) {
 }
 
 function SegmentBlock({ seg, i, count, left, editing, icons, comp, open, onToggle, onChange, onMove, onDelete }) {
+  const [armDel, setArmDel] = useState(false)
   return (
     <div>
       <div
@@ -613,7 +614,20 @@ function SegmentBlock({ seg, i, count, left, editing, icons, comp, open, onToggl
           <span className="flex items-center gap-0.5 shrink-0">
             <button className="px-1 text-silver hover:text-cream disabled:opacity-30" disabled={i === 0} onClick={() => onMove(-1)}>↑</button>
             <button className="px-1 text-silver hover:text-cream disabled:opacity-30" disabled={i === count - 1} onClick={() => onMove(1)}>↓</button>
-            <button className="px-1 text-danger/70 hover:text-danger" onClick={onDelete}>✕</button>
+            <button
+              className={`px-1 rounded ${armDel ? 'bg-danger/20 text-danger font-bold' : 'text-danger/70 hover:text-danger'}`}
+              title={armDel ? 'Click again to delete this segment' : 'Delete segment'}
+              onClick={() => {
+                if (!armDel) {
+                  setArmDel(true)
+                  setTimeout(() => setArmDel(false), 3000)
+                  return
+                }
+                onDelete()
+              }}
+            >
+              {armDel ? 'Sure?' : '✕'}
+            </button>
           </span>
         )}
         <button className="text-silver/60 px-1" onClick={onToggle} title={editing ? 'Open to edit strategy, map & notes' : ''}>
@@ -664,14 +678,17 @@ function SegmentBlock({ seg, i, count, left, editing, icons, comp, open, onToggl
 function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverride, onClearOverride }) {
   const [editing, setEditing] = useState(false)
   const [open, setOpen] = useState(null)
+  const [armReset, setArmReset] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const w = override || pub
 
   const update = (patch) => {
     const next = { ...w, ...patch }
     if (!saveOverridesFor(pub.id, next)) {
-      alert('Could not save locally (image too large for browser storage). Try a smaller image.')
+      setSaveError(true)
       return
     }
+    setSaveError(false)
     onSaveOverride(pub.id, next)
   }
   // saved via parent; helper checks quota
@@ -739,15 +756,19 @@ function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverr
                 ⬇ Export plan
               </button>
               <button
-                className="btn btn-ghost text-xs"
+                className={`btn text-xs ${armReset ? 'bg-danger/20 border border-danger text-danger font-semibold' : 'btn-ghost'}`}
                 onClick={() => {
-                  if (confirm('Discard your local edits for this wing and go back to the published plan?')) {
-                    onClearOverride(pub.id)
-                    setEditing(false)
+                  if (!armReset) {
+                    setArmReset(true)
+                    setTimeout(() => setArmReset(false), 3500)
+                    return
                   }
+                  setArmReset(false)
+                  onClearOverride(pub.id)
+                  setEditing(false)
                 }}
               >
-                Reset to published
+                {armReset ? 'Sure? This deletes your local edits' : 'Reset to published'}
               </button>
             </>
           )}
@@ -757,6 +778,11 @@ function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverr
         </div>
       </div>
 
+      {saveError && (
+        <div className="text-xs px-3 py-2 rounded-xl border border-danger/40 bg-danger/10 text-danger">
+          Could not save the last change — the image is too large for browser storage. Use a smaller screenshot (or remove the image), then try again.
+        </div>
+      )}
       {override && (
         <div className="text-xs px-3 py-2 rounded-xl border border-amber-400/30 bg-amber-400/10 text-amber-200">
           This plan has local edits saved on <b>this device only</b>. Use <b>Export plan</b> and send the file to publish it for the whole squad.
@@ -871,7 +897,7 @@ function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverr
                 onToggle={() => setOpen(open === (seg.id || i) ? null : seg.id || i)}
                 onChange={(s) => setSeg(i, s)}
                 onMove={(dir) => moveSeg(i, dir)}
-                onDelete={() => confirm(`Delete segment "${seg.name}"?`) && delSeg(i)}
+                onDelete={() => delSeg(i)}
               />
             )
           })}

@@ -28,7 +28,7 @@ export function purgeLegacyLocal() {
 }
 
 export async function loadData(name) {
-  return fetch(`${import.meta.env.BASE_URL}${DATA_FILES[name]}`)
+  return fetch(`${import.meta.env.BASE_URL}${DATA_FILES[name]}`, { cache: 'no-store' })
     .then((r) => (r.ok ? r.json() : null))
     .catch(() => null)
 }
