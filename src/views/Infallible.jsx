@@ -186,6 +186,60 @@ function WingCard({ w, edited, onOpen }) {
   )
 }
 
+function BuildCombo({ value, builds, icons, onCommit }) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState(value || '')
+  const sorted = useMemo(() => [...builds].sort((a, b) => a.name.localeCompare(b.name)), [builds])
+  const q = query.trim().toLowerCase()
+  const list = q && q !== (value || '').toLowerCase() ? sorted.filter((b) => b.name.toLowerCase().includes(q)) : sorted
+
+  const commit = (v) => {
+    setOpen(false)
+    setQuery(v)
+    if (v !== (value || '')) onCommit(v)
+  }
+
+  return (
+    <span className="relative">
+      <input
+        value={query}
+        placeholder="class/build"
+        className={`${selCls} w-40`}
+        onFocus={() => setOpen(true)}
+        onChange={(e) => {
+          setQuery(e.target.value)
+          setOpen(true)
+        }}
+        onBlur={() => commit(query)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.target.blur()
+          if (e.key === 'Escape') setOpen(false)
+        }}
+      />
+      {open && list.length > 0 && (
+        <div className="absolute left-0 top-full mt-1 w-56 max-h-60 overflow-y-auto z-30 bg-panel border border-teal/40 rounded-xl shadow-2xl py-1">
+          {list.map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 text-left text-sm text-cream/90 hover:bg-teal/15"
+              onMouseDown={(e) => {
+                e.preventDefault()
+                commit(b.name)
+              }}
+            >
+              {resolveBuildIcon(b.name, icons) && (
+                <img src={resolveBuildIcon(b.name, icons)} alt="" className="w-6 h-6 rounded-sm shrink-0" />
+              )}
+              {b.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </span>
+  )
+}
+
 function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
   if (!editing) {
     const isEmpty = !slot.build && !slot.player
@@ -226,20 +280,7 @@ function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
       {slot.build && resolveBuildIcon(slot.build, icons) && (
         <img src={resolveBuildIcon(slot.build, icons)} alt="" className="w-9 h-9 rounded-md shrink-0" />
       )}
-      <input
-        key={slot.build || ''}
-        defaultValue={slot.build || ''}
-        placeholder="class/build"
-        list="kp-build-names"
-        className={`${selCls} w-40`}
-        onBlur={(e) => e.target.value !== (slot.build || '') && onChange({ ...slot, build: e.target.value })}
-        onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
-      />
-      <datalist id="kp-build-names">
-        {[...builds].sort((a, b) => a.name.localeCompare(b.name)).map((b) => (
-          <option key={b.id} value={b.name} />
-        ))}
-      </datalist>
+      <BuildCombo key={slot.build || ''} value={slot.build} builds={builds} icons={icons} onCommit={(v) => onChange({ ...slot, build: v })} />
       <Field value={slot.note} placeholder="note" className="flex-1 min-w-[80px]" onCommit={(v) => onChange({ ...slot, note: v })} />
     </div>
   )
