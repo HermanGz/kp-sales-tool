@@ -304,18 +304,21 @@ function CompEditorRow({ slot, editing, builds, players, icons, onChange }) {
 }
 
 const DRAW_COLORS = ['#4fb3d4', '#e05252', '#f5b942', '#39c07a', '#f2ead9']
+const svgMarker = (body) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>${body}</svg>`)}`
+
 const MAP_ICONS = [
   { id: 'mesmer_portal', name: 'Mesmer Portal (Portal Entre)', url: 'https://render.guildwars2.com/file/BB7D7902B947C52DF3FC340AA66697F0CE669E31/103558.png' },
   { id: 'shadow_portal', name: 'Thief Portal (Prepare Shadow Portal)', url: 'https://render.guildwars2.com/file/D62F215C68C77A2F069238A39FD8A6A135B438C1/2175068.png' },
   { id: 'mass_invis', name: 'Mass Invisibility', url: 'https://render.guildwars2.com/file/E1EB3BC23A10BA9150EF992B03A813F4A26217A8/103755.png' },
-  { id: 'mk_arrow', name: 'Marker 1 — Arrow', url: 'https://wiki.guildwars2.com/wiki/Special:FilePath/Arrow_marker.png' },
-  { id: 'mk_circle', name: 'Marker 2 — Circle', url: 'https://wiki.guildwars2.com/wiki/Special:FilePath/Circle_marker.png' },
-  { id: 'mk_heart', name: 'Marker 3 — Heart', url: 'https://wiki.guildwars2.com/wiki/Special:FilePath/Heart_marker.png' },
-  { id: 'mk_square', name: 'Marker 4 — Square', url: 'https://wiki.guildwars2.com/wiki/Special:FilePath/Square_marker.png' },
-  { id: 'mk_star', name: 'Marker 5 — Star', url: 'https://wiki.guildwars2.com/wiki/Special:FilePath/Star_marker.png' },
-  { id: 'mk_spiral', name: 'Marker 6 — Spiral', url: 'https://wiki.guildwars2.com/wiki/Special:FilePath/Spiral_marker.png' },
-  { id: 'mk_triangle', name: 'Marker 7 — Triangle', url: 'https://wiki.guildwars2.com/wiki/Special:FilePath/Triangle_marker.png' },
-  { id: 'mk_x', name: 'Marker 8 — X', url: 'https://wiki.guildwars2.com/wiki/Special:FilePath/X_marker.png' },
+  { id: 'mk_arrow', name: 'Marker 1 — Arrow', url: svgMarker("<path d='M32 60 L10 28 L23 28 L23 6 L41 6 L41 28 L54 28 Z' fill='#3AA0FF' stroke='white' stroke-width='4' stroke-linejoin='round'/>") },
+  { id: 'mk_circle', name: 'Marker 2 — Circle', url: svgMarker("<circle cx='32' cy='32' r='21' fill='none' stroke='white' stroke-width='15'/><circle cx='32' cy='32' r='21' fill='none' stroke='#FF5FD7' stroke-width='9'/>") },
+  { id: 'mk_heart', name: 'Marker 3 — Heart', url: svgMarker("<path d='M32 56 C10 41 5 24 16 15 C24 9 32 15 32 21 C32 15 40 9 48 15 C59 24 54 41 32 56 Z' fill='#3FD75F' stroke='white' stroke-width='4' stroke-linejoin='round'/>") },
+  { id: 'mk_square', name: 'Marker 4 — Square', url: svgMarker("<rect x='14' y='14' width='36' height='36' fill='none' stroke='white' stroke-width='14'/><rect x='14' y='14' width='36' height='36' fill='none' stroke='#2ED9D9' stroke-width='8'/>") },
+  { id: 'mk_star', name: 'Marker 5 — Star', url: svgMarker("<polygon points='32,4 40.2,23.2 61,25 45.2,38.8 50,59 32,48 14,59 18.8,38.8 3,25 23.8,23.2' fill='#FFD84D' stroke='white' stroke-width='4' stroke-linejoin='round'/>") },
+  { id: 'mk_spiral', name: 'Marker 6 — Spiral', url: svgMarker("<path d='M32 32 a5 5 0 1 0 -5 5 a11 11 0 1 0 11 -11 a17 17 0 1 0 -17 17 a24 24 0 1 0 24 -24' fill='none' stroke='white' stroke-width='11' stroke-linecap='round'/><path d='M32 32 a5 5 0 1 0 -5 5 a11 11 0 1 0 11 -11 a17 17 0 1 0 -17 17 a24 24 0 1 0 24 -24' fill='none' stroke='#B266FF' stroke-width='6' stroke-linecap='round'/>") },
+  { id: 'mk_triangle', name: 'Marker 7 — Triangle', url: svgMarker("<polygon points='32,9 58,54 6,54' fill='none' stroke='white' stroke-width='14' stroke-linejoin='round'/><polygon points='32,9 58,54 6,54' fill='none' stroke='#FF9B3D' stroke-width='8' stroke-linejoin='round'/>") },
+  { id: 'mk_x', name: 'Marker 8 — X', url: svgMarker("<path d='M14 14 L50 50 M50 14 L14 50' stroke='white' stroke-width='16' stroke-linecap='round'/><path d='M14 14 L50 50 M50 14 L14 50' stroke='#FF4D4D' stroke-width='9' stroke-linecap='round'/>") },
 ]
 
 const TOOLS = [
