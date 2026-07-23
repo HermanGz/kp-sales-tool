@@ -880,6 +880,7 @@ function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverr
   const [open, setOpen] = useState(null)
   const [armReset, setArmReset] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  const [importMsg, setImportMsg] = useState(null)
   const w = override || pub
 
   const update = (patch) => {
@@ -950,9 +951,40 @@ function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverr
           ← All wings
         </button>
         <div className="flex items-center gap-2">
+          <label className="btn btn-ghost text-xs cursor-pointer" title="Load a plan file exported by a teammate — it becomes your local plan">
+            ⬆ Import plan
+            <input
+              type="file"
+              accept=".json,application/json"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                e.target.value = ''
+                if (!file) return
+                const reader = new FileReader()
+                reader.onload = () => {
+                  try {
+                    const data = JSON.parse(reader.result)
+                    const wings = data.wings || {}
+                    const ids = Object.keys(wings)
+                    if (!ids.length) throw new Error('no wings')
+                    const all = loadOverrides()
+                    ids.forEach((id) => (all[id] = wings[id]))
+                    if (!saveOverrides(all)) throw new Error('storage full')
+                    onSaveOverride()
+                    setImportMsg({ ok: true, text: `Imported plan for ${ids.map((i) => i.toUpperCase()).join(', ')} — now your local plan on this device.` })
+                  } catch (err) {
+                    setImportMsg({ ok: false, text: `Could not import that file${String(err.message).includes('storage') ? ' — browser storage is full (use smaller map images)' : ' — it does not look like a KP Infallible plan export'}.` })
+                  }
+                  setTimeout(() => setImportMsg(null), 8000)
+                }
+                reader.readAsText(file)
+              }}
+            />
+          </label>
           {override && (
             <>
-              <button className="btn btn-ghost text-xs" onClick={exportPlan} title="Download your local plan as JSON — send it to publish it for the whole squad">
+              <button className="btn btn-ghost text-xs" onClick={exportPlan} title="Download your local plan as JSON — send it to a teammate or to Claude to publish it">
                 ⬇ Export plan
               </button>
               <button
@@ -978,6 +1010,11 @@ function WingDetail({ pub, override, icons, builds, players, onBack, onSaveOverr
         </div>
       </div>
 
+      {importMsg && (
+        <div className={`text-xs px-3 py-2 rounded-xl border ${importMsg.ok ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : 'border-danger/40 bg-danger/10 text-danger'}`}>
+          {importMsg.text}
+        </div>
+      )}
       {saveError && (
         <div className="text-xs px-3 py-2 rounded-xl border border-danger/40 bg-danger/10 text-danger">
           Could not save the last change — the image is too large for browser storage. Use a smaller screenshot (or remove the image), then try again.
